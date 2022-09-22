@@ -49,7 +49,7 @@ async def receive_task(data):
 async def run_client(stop_event) -> None:
     sio.stop_event = stop_event
     try:
-        await sio.connect('http://127.0.0.1:5000')
+        await sio.connect('https://ai.posterity.no/ws')
     except ConnectionError as e:
         print(e)
         stop_event.set()
