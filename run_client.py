@@ -1,14 +1,12 @@
 import os
+import tempfile
 import asyncio
 import json
 import requests
 from requests.exceptions import ConnectionError, ConnectTimeout
-import uuid
-
 from urllib3.exceptions import MaxRetryError, NewConnectionError
-
+import uuid
 from task import SDTask, DONE, ERROR, IDLE
-
 
 API_URL = os.environ.get("SD_API_URL", "http://127.0.0.1:5000")
 
@@ -51,6 +49,7 @@ def task_callback(t: SDTask):
 
 
 def run_client() -> bool:
+    resp = {}
     try:
         result = requests.put(
             API_URL + "/register_client/{0}".format(client_name), json={"client_uid": client_uid}
@@ -60,8 +59,26 @@ def run_client() -> bool:
         print("ERROR DURING CONNECTION")
         return False
     else:
-        print("Connected and registered on server!")
-    return True
+        resp = result.json()
+        if "status" in resp:
+            if resp["status"] != ERROR:
+                print("Connected and registered on server!")
+                return True
+    print("Unknown error when registering on server, aborting.")
+    print(resp)
+    return False
+
+
+async def report_done(task: SDTask):
+    try:
+        result = requests.post(
+            API_URL + "/report_complete/{0}".format(task.task_id),
+            files={"file": open(task.image_file.name,'rb')}
+        )
+        print(result.json())
+        print("Task has been reported as done and uploaded!")
+    except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
+        print("Error when requesting task update, is server down? Retrying in 10 seconds.")
 
 
 async def task_runner():
@@ -71,6 +88,8 @@ async def task_runner():
             if current_task.ready and current_task.status == IDLE:
                 await current_task.process_task()
             elif current_task.status == DONE:
+                await report_done(current_task)
+                current_task.image_file.close()
                 task_queue.remove(current_task)
             elif current_task.status == ERROR:
                 task_queue.remove(current_task)
@@ -83,7 +102,11 @@ async def task_runner():
             else:
                 if "task_id" in result.json():
                     print("New task received, adding to queue.")
-                    task = SDTask(json_data=result.json(), callback=task_callback)
+                    image_file = tempfile.NamedTemporaryFile(
+                        prefix="aigen_",
+                        suffix=".jpg"
+                    )
+                    task = SDTask(image_file, json_data=result.json(), callback=task_callback)
                     task_queue.append(task)
         await asyncio.sleep(1.0)
 

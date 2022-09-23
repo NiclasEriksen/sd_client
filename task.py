@@ -1,4 +1,5 @@
 import asyncio
+from tempfile import NamedTemporaryFile
 from imaginairy import ImaginePrompt, imagine
 
 IDLE = 0
@@ -12,6 +13,7 @@ class IntegrityError(Exception):
 
 
 class SDTask():
+    image_file: NamedTemporaryFile = None
     prompt: str = "No prompt"
     prompt_strength: float = 0.8
     steps: int = 40
@@ -23,10 +25,11 @@ class SDTask():
     callback = None
     result = None
 
-    def __init__(self, json_data=None, callback=None):
+    def __init__(self, out_file: NamedTemporaryFile, json_data=None, callback=None):
         if isinstance(json_data, dict):
             self.from_json(json_data)
         self.callback = callback
+        self.image_file = out_file
 
     def from_json(self, data: dict):
         self.status = IDLE
@@ -81,9 +84,9 @@ class SDTask():
             seed=self.seed
         )
 
-        await asyncio.sleep(10)
+        await asyncio.sleep(2)
         # loop = asyncio.get_running_loop()
-        # _result = await loop.run_in_executor(None, imagine_process, ip, "out.jpg")
+        # _result = await loop.run_in_executor(None, imagine_process, ip, self.image_file.name)
 
         self.status = DONE
         if self.callback:
