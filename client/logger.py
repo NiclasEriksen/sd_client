@@ -9,7 +9,7 @@ fmt = '%(asctime)s | %(levelname)8s | %(message)s'
 
 # Create file handler for logging to a file (logs all five levels)
 today = datetime.date.today()
-file_handler = logging.FileHandler('my_app_{}.log'.format(today.strftime('%Y_%m_%d')))
+file_handler = logging.FileHandler('client_{}.log'.format(today.strftime('%Y_%m_%d')))
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(logging.Formatter(fmt))
 
@@ -39,7 +39,7 @@ class CustomFormatter(logging.Formatter):
 
     def format(self, record):
         log_fmt = self.FORMATS.get(record.levelno)
-        formatter = logging.Formatter(log_fmt, "%Y-%m-%d %H:%M:%S")
+        formatter = logging.Formatter(log_fmt, "%H:%M:%S")
         return formatter.format(record)
 
 stdout_handler = logging.StreamHandler()
