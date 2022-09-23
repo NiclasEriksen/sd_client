@@ -5,7 +5,10 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 # Define format for logs
-fmt = '%(asctime)s | %(levelname)8s | %(message)s'
+fmt_1 = "%(asctime)s"
+fmt_2 = "%(levelname)8s"
+fmt_3 = "%(message)s"
+fmt = fmt_1 + "| " + fmt_2 + " |" + fmt_3
 
 # Create file handler for logging to a file (logs all five levels)
 today = datetime.date.today()
@@ -14,11 +17,10 @@ file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(logging.Formatter(fmt))
 
 
-
-
 class CustomFormatter(logging.Formatter):
     """Logging colored formatter, adapted from https://stackoverflow.com/a/56944256/3638629"""
 
+    black = '\x1b[30;1m'
     grey = '\x1b[38;21m'
     blue = '\x1b[38;5;39m'
     yellow = '\x1b[38;5;226m'
@@ -26,15 +28,15 @@ class CustomFormatter(logging.Formatter):
     bold_red = '\x1b[31;1m'
     reset = '\x1b[0m'
 
-    def __init__(self, fmt):
+    def __init__(self, fmt1, fmt2, fmt3):
         super().__init__()
-        self.fmt = fmt
+        self.fmt = fmt1 + "| " + fmt2 + " |" + fmt3
         self.FORMATS = {
-            logging.DEBUG: self.grey + self.fmt + self.reset,
-            logging.INFO: self.blue + self.fmt + self.reset,
-            logging.WARNING: self.yellow + self.fmt + self.reset,
-            logging.ERROR: self.red + self.fmt + self.reset,
-            logging.CRITICAL: self.bold_red + self.fmt + self.reset
+            logging.DEBUG: self.grey + fmt1 + "| " + self.grey + fmt2 + self.reset + " |" + fmt3,
+            logging.INFO: self.grey + fmt1 + "| " + self.blue + fmt2 + self.reset + " |" + fmt3,
+            logging.WARNING: self.grey + fmt1 + "| " + self.yellow + fmt2 + self.reset + " |" + fmt3,
+            logging.ERROR: self.grey + fmt1 + "| " + self.red + fmt2 + self.reset + " |" + fmt3,
+            logging.CRITICAL: self.grey + fmt1 + "| " + self.bold_red + fmt2 + self.reset + " |" + fmt3,
         }
 
     def format(self, record):
@@ -44,7 +46,7 @@ class CustomFormatter(logging.Formatter):
 
 stdout_handler = logging.StreamHandler()
 stdout_handler.setLevel(logging.DEBUG)
-stdout_handler.setFormatter(CustomFormatter(fmt))
+stdout_handler.setFormatter(CustomFormatter(fmt_1, fmt_2, fmt_3))
 
 logger.addHandler(stdout_handler)
 logger.addHandler(file_handler)
