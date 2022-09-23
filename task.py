@@ -84,9 +84,11 @@ class SDTask():
             seed=self.seed
         )
 
-        await asyncio.sleep(2)
-        # loop = asyncio.get_running_loop()
-        # _result = await loop.run_in_executor(None, imagine_process, ip, self.image_file.name)
+        # import shutil
+        # shutil.copyfile("/home/fredspipa/Pictures/joy5KZ9.jpg", self.image_file.name)
+        # await asyncio.sleep(2)
+        loop = asyncio.get_running_loop()
+        _result = await loop.run_in_executor(None, imagine_process, ip, self.image_file.name)
 
         self.status = DONE
         if self.callback:
