@@ -6,9 +6,9 @@ logger.setLevel(logging.DEBUG)
 
 # Define format for logs
 fmt_1 = "%(asctime)s"
-fmt_2 = "%(levelname)8s"
+fmt_2 = "%(levelname)s"
 fmt_3 = "%(message)s"
-fmt = fmt_1 + "| " + fmt_2 + " |" + fmt_3
+fmt = fmt_1 + "| " + "%(levelname)8s" + " |" + fmt_3
 
 # Create file handler for logging to a file (logs all five levels)
 today = datetime.date.today()
@@ -30,13 +30,13 @@ class CustomFormatter(logging.Formatter):
 
     def __init__(self, fmt1, fmt2, fmt3):
         super().__init__()
-        self.fmt = fmt1 + "| " + fmt2 + " |" + fmt3
+        self.fmt = fmt1 + "|" + fmt2 + "|" + fmt3
         self.FORMATS = {
-            logging.DEBUG: self.grey + fmt1 + "| " + self.grey + fmt2 + self.reset + " |" + fmt3,
-            logging.INFO: self.grey + fmt1 + "| " + self.blue + fmt2 + self.reset + " |" + fmt3,
-            logging.WARNING: self.grey + fmt1 + "| " + self.yellow + fmt2 + self.reset + " |" + fmt3,
-            logging.ERROR: self.grey + fmt1 + "| " + self.red + fmt2 + self.reset + " |" + fmt3,
-            logging.CRITICAL: self.grey + fmt1 + "| " + self.bold_red + fmt2 + self.reset + " |" + fmt3,
+            logging.DEBUG: self.grey + fmt1 + "|" + self.grey + fmt2 + self.reset + "| " + fmt3,
+            logging.INFO: self.grey + fmt1 + "|" + self.blue + fmt2 + self.reset + "| " + fmt3,
+            logging.WARNING: self.grey + fmt1 + "|" + self.yellow + fmt2 + self.reset + " |" + fmt3,
+            logging.ERROR: self.grey + fmt1 + "|" + self.red + fmt2 + self.reset + "| " + fmt3,
+            logging.CRITICAL: self.grey + fmt1 + "|" + self.bold_red + fmt2 + self.reset + "| " + fmt3,
         }
 
     def format(self, record):
