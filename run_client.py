@@ -42,11 +42,11 @@ def apply_settings():
 
 def task_callback(t: SDTask):
     if t.status == DONE:
-        print("Task finished successfully")
+        logger.info("Task finished successfully")
     elif t.status == ERROR:
-        print("Task seems to have failed.")
+        logger.error("Task seems to have failed.")
     else:
-        print("Update from task {0}".format(t))
+        logger.info("Update from task {0}".format(t))
 
 
 def run_client() -> bool:
@@ -56,8 +56,8 @@ def run_client() -> bool:
             API_URL + "/register_client/{0}".format(client_name), json={"client_uid": client_uid}
         )
     except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
-        print(e)
-        print("ERROR DURING CONNECTION")
+        logger.error(e)
+        logger.critical("ERROR DURING CONNECTION")
         return False
     else:
         resp = result.json()
@@ -66,8 +66,8 @@ def run_client() -> bool:
                 logger.info("Connected and registered on server!")
                 logger.info("Name: \"{0}\" UUID: \"{1}\"".format(client_name, client_uid))
                 return True
-    logger.error("Unknown error when registering on server, aborting.")
-    print(resp)
+    logger.error(resp)
+    logger.critical("Unknown error when registering on server, aborting.")
     return False
 
 
