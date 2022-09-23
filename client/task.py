@@ -1,6 +1,7 @@
 import asyncio
 from tempfile import NamedTemporaryFile
 from imaginairy import ImaginePrompt, imagine
+from client.logger import logger
 
 IDLE = 0
 PROCESSING = 1
@@ -61,7 +62,7 @@ class SDTask():
                 assert self.width % 64 == 0
                 assert self.height % 64 == 0
             except (ValueError, AssertionError, TypeError):
-                print("Invalid value for width/height, defaulting to 512")
+                logger.warning("Invalid value for width/height, defaulting to 512")
                 self.width = 512
                 self.height = 512
 
@@ -72,7 +73,7 @@ class SDTask():
         return True
 
     async def process_task(self):
-        print("Starting task")
+        logger.info("Starting task process (this might take a while)")
         self.status = PROCESSING
 
         ip = ImaginePrompt(

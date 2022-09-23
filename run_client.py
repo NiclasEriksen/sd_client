@@ -3,10 +3,11 @@ import tempfile
 import asyncio
 import json
 import requests
-from requests.exceptions import ConnectionError, ConnectTimeout
+from requests.exceptions import ConnectionError, ConnectTimeout, JSONDecodeError
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 import uuid
-from task import SDTask, DONE, ERROR, IDLE
+from client.task import SDTask, DONE, ERROR, IDLE
+from client.logger import logger
 
 API_URL = os.environ.get("SD_API_URL", "http://127.0.0.1:5000")
 
@@ -62,9 +63,10 @@ def run_client() -> bool:
         resp = result.json()
         if "status" in resp:
             if resp["status"] != ERROR:
-                print("Connected and registered on server!")
+                logger.info("Connected and registered on server!")
+                logger.info("Name: \"{0}\" UUID: \"{1}\"".format(client_name, client_uid))
                 return True
-    print("Unknown error when registering on server, aborting.")
+    logger.error("Unknown error when registering on server, aborting.")
     print(resp)
     return False
 
@@ -75,10 +77,10 @@ async def report_done(task: SDTask):
             API_URL + "/report_complete/{0}".format(task.task_id),
             files={"file": open(task.image_file.name,'rb')}
         )
-        print(result.json())
-        print("Task has been reported as done and uploaded!")
+        logger.debug(result.json())
+        logger.info("Task has been reported as done and uploaded!")
     except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
-        print("Error when requesting task update, is server down? Retrying in 10 seconds.")
+        logger.error("Error when requesting task update, is server down? Retrying in 10 seconds.")
 
 
 async def task_runner():
@@ -97,17 +99,20 @@ async def task_runner():
             try:
                 result = requests.get(API_URL + "/process_task", json={"client_uid": client_uid})
             except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
-                print("Error when requesting task update, is server down? Retrying in 10 seconds.")
+                logger.error("Error when requesting task update, is server down? Retrying in 10 seconds.")
                 await asyncio.sleep(9)
             else:
-                if "task_id" in result.json():
-                    print("New task received, adding to queue.")
-                    image_file = tempfile.NamedTemporaryFile(
-                        prefix="aigen_",
-                        suffix=".jpg"
-                    )
-                    task = SDTask(image_file, json_data=result.json(), callback=task_callback)
-                    task_queue.append(task)
+                try:
+                    if "task_id" in result.json():
+                        logger.info("New task received, adding to queue.")
+                        image_file = tempfile.NamedTemporaryFile(
+                            prefix="aigen_",
+                            suffix=".jpg"
+                        )
+                        task = SDTask(image_file, json_data=result.json(), callback=task_callback)
+                        task_queue.append(task)
+                except JSONDecodeError:
+                    logger.error("Empty response from server, invalid request?")
         await asyncio.sleep(1.0)
 
 
@@ -116,7 +121,7 @@ async def poller():
         try:
             result = requests.get(API_URL + "/poll", json={"client_uid": client_uid})
         except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
-            print("Polling failed! Is server down?")
+            logger.warning("Polling failed! Is server down?")
         await asyncio.sleep(10)
 
 
@@ -125,8 +130,11 @@ async def main():
     if not connected:
         return
     stop_event = asyncio.Event()
+    logger.info("Starting processing task.")
     asyncio.get_event_loop().create_task(task_runner())
+    logger.info("Starting polling task.")
     asyncio.get_event_loop().create_task(poller())
+    logger.info("Waiting for tasks from server...")
     await stop_event.wait()
 
 
