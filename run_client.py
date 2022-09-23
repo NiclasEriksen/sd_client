@@ -1,33 +1,44 @@
+import os
 import asyncio
-import socketio
+import json
+import requests
+from requests.exceptions import ConnectionError, ConnectTimeout
 import uuid
-from socketio.exceptions import ConnectionError
-from task import SDTask, DONE, ERROR
 
-client_id: str = uuid.uuid4().__str__()
+from urllib3.exceptions import MaxRetryError, NewConnectionError
+
+from task import SDTask, DONE, ERROR, IDLE
+
+
+API_URL = os.environ.get("SD_API_URL", "http://127.0.0.1:5000")
+
 task_queue: list = []
 
 loop = asyncio.get_event_loop()
-sio = socketio.AsyncClient(
-    reconnection_delay=0.1
-)
+client_uid = ""
+client_name = ""
 
 
-@sio.event
-async def connect():
-    print("I'm connected!")
-    print("My UUID: " + client_id)
-    await sio.emit("register_client", data={"uuid": client_id})
+def apply_settings():
+    data = {}
+    if os.path.exists("client_info.json"):
+        with open("client_info.json", "r+") as f:
+            data = json.load(f)
+    if not "client_uid" in data or not "client_name" in data:
+        data = {"client_uid": "", "client_name": ""}
+    if not len(data["client_uid"]):
+        data["client_uid"] = uuid.uuid4().__str__()
+    if not len(data["client_name"]):
+        data["client_name"] = input("Pick a name for this client:\n").strip()
 
+    global client_uid
+    global client_name
 
-@sio.event
-async def connect_error(data):
-    print("The connection failed!")
+    client_uid = data["client_uid"]
+    client_name = data["client_name"].strip()
 
-
-@sio.event
-async def disconnect():
-    print("I'm disconnected!")
+    with open("client_info.json", "w") as f:
+        json.dump(data, f)
 
 
 def task_callback(t: SDTask):
@@ -39,48 +50,63 @@ def task_callback(t: SDTask):
         print("Update from task {0}".format(t))
 
 
-@sio.on("task")
-async def receive_task(data):
-    print('I received a task!!!')
-
-    t = SDTask(json_data=data, callback=task_callback)
-    if t.ready:
-        task_queue.append(t)
-
-
-async def run_client(stop_event) -> None:
-    sio.stop_event = stop_event
+def run_client() -> bool:
     try:
-        await sio.connect('https://ai.posterity.no/ws')
-        # await sio.connect('http://127.0.0.1:5000')
-    except ConnectionError as e:
+        result = requests.put(
+            API_URL + "/register_client/{0}".format(client_name), json={"client_uid": client_uid}
+        )
+    except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
         print(e)
-        stop_event.set()
+        print("ERROR DURING CONNECTION")
+        return False
     else:
-        await sio.wait()
+        print("Connected and registered on server!")
+    return True
 
 
 async def task_runner():
     while True:
         if len(task_queue):
             current_task: SDTask = task_queue[0]
-            if current_task.ready:
+            if current_task.ready and current_task.status == IDLE:
                 await current_task.process_task()
             elif current_task.status == DONE:
-                await sio.emit("task_done", data=(current_task.task_id, None))
                 task_queue.remove(current_task)
             elif current_task.status == ERROR:
-                await sio.emit("task_error")
                 task_queue.remove(current_task)
-        await asyncio.sleep(0.1)
+        else:
+            try:
+                result = requests.get(API_URL + "/process_task", json={"client_uid": client_uid})
+            except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
+                print("Error when requesting task update, is server down? Retrying in 10 seconds.")
+                await asyncio.sleep(9)
+            else:
+                if "task_id" in result.json():
+                    print("New task received, adding to queue.")
+                    task = SDTask(json_data=result.json(), callback=task_callback)
+                    task_queue.append(task)
+        await asyncio.sleep(1.0)
+
+
+async def poller():
+    while True:
+        try:
+            result = requests.get(API_URL + "/poll", json={"client_uid": client_uid})
+        except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
+            print("Polling failed! Is server down?")
+        await asyncio.sleep(10)
 
 
 async def main():
+    connected = run_client()
+    if not connected:
+        return
     stop_event = asyncio.Event()
-    asyncio.get_event_loop().create_task(run_client(stop_event))
     asyncio.get_event_loop().create_task(task_runner())
+    asyncio.get_event_loop().create_task(poller())
     await stop_event.wait()
 
 
 if __name__ == "__main__":
+    apply_settings()
     asyncio.run(main())

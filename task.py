@@ -64,7 +64,7 @@ class SDTask():
 
     @property
     def ready(self) -> bool:
-        if not len(self.prompt) or not self.task_id >= 0 or self.status != IDLE:
+        if not len(self.prompt) or not self.task_id >= 0:
             return False
         return True
 
@@ -81,8 +81,9 @@ class SDTask():
             seed=self.seed
         )
 
-        loop = asyncio.get_running_loop()
-        result = await loop.run_in_executor(None, imagine_process, ip, "out.jpg")
+        await asyncio.sleep(10)
+        # loop = asyncio.get_running_loop()
+        # _result = await loop.run_in_executor(None, imagine_process, ip, "out.jpg")
 
         self.status = DONE
         if self.callback:
