@@ -113,8 +113,8 @@ class SDTask():
         file_size = os.path.getsize(self.image_file.name)
         if file_size < 100: # Just in case
             self.status = ERROR
-
-        self.status = DONE
+        else:
+            self.status = DONE
         if self.callback:
             self.callback(self)
 
