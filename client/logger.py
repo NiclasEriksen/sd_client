@@ -1,3 +1,4 @@
+import os
 import logging
 import datetime
 
@@ -12,7 +13,7 @@ fmt = fmt_1 + "| " + "%(levelname)8s" + " |" + fmt_3
 
 # Create file handler for logging to a file (logs all five levels)
 today = datetime.date.today()
-file_handler = logging.FileHandler('client_{}.log'.format(today.strftime('%Y_%m_%d')))
+file_handler = logging.FileHandler(os.path.join("logs", "client_{}.log".format(today.strftime("%Y_%m_%d"))))
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(logging.Formatter(fmt))
 
