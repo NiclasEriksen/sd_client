@@ -1,4 +1,5 @@
 import asyncio
+import os
 import random
 from tempfile import NamedTemporaryFile
 from imaginairy import ImaginePrompt, imagine
@@ -109,6 +110,10 @@ class SDTask():
         loop = asyncio.get_running_loop()
         _result = await loop.run_in_executor(None, imagine_process, ip, self.image_file.name)
 
+        file_size = os.path.getsize(self.image_file.name)
+        if file_size < 100: # Just in case
+            self.status = ERROR
+
         self.status = DONE
         if self.callback:
             self.callback(self)
@@ -116,7 +121,11 @@ class SDTask():
 
 def imagine_process(ip: ImaginePrompt, save_path: str):
     result = None
-    for r in imagine([ip]):
-        result = r
-        break
+    try:
+        for r in imagine([ip]):
+            result = r
+            break
+    except Exception as e:
+        logger.error(e)
+        logger.error("AI generation failed.")
     result.save(save_path)

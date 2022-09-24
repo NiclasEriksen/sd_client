@@ -72,15 +72,27 @@ def run_client() -> bool:
 
 
 async def report_done(task: SDTask):
-    try:
-        result = requests.post(
-            API_URL + "/report_complete/{0}".format(task.task_id),
-            files={"file": open(task.image_file.name,'rb')}
-        )
-        logger.debug(result.json())
-        logger.info("Task has been reported as done and uploaded!")
-    except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
-        logger.error("Error when requesting task update, is server down? Retrying in 10 seconds.")
+    if task.status == DONE:
+        try:
+            result = requests.post(
+                API_URL + "/report_complete/{0}".format(task.task_id),
+                files={"file": open(task.image_file.name,'rb')}
+            )
+            logger.debug(result.json())
+            logger.info("Task has been reported as done and uploaded!")
+        except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
+            logger.error("Error when reporting task status, is server down?")
+    else:
+        try:
+            result = requests.put(
+                API_URL + "/report_failed/{0}".format(task.task_id),
+                json={"client_uid": client_uid}
+            )
+            logger.debug(result.json())
+            logger.warning("Task has been reported as failed!")
+        except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
+            logger.error("Error when reporting task status, is server down?")
+
 
 
 async def task_runner():
@@ -89,11 +101,9 @@ async def task_runner():
             current_task: SDTask = task_queue[0]
             if current_task.ready and current_task.status == IDLE:
                 await current_task.process_task()
-            elif current_task.status == DONE:
+            elif current_task.status == DONE or current_task.status == ERROR:
                 await report_done(current_task)
                 current_task.image_file.close()
-                task_queue.remove(current_task)
-            elif current_task.status == ERROR:
                 task_queue.remove(current_task)
         else:
             try:
