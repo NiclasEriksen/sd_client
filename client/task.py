@@ -128,4 +128,6 @@ def imagine_process(ip: ImaginePrompt, save_path: str):
     except Exception as e:
         logger.error(e)
         logger.error("AI generation failed.")
-    result.save(save_path)
+
+    if result != None:
+        result.save(save_path)
