@@ -1,4 +1,5 @@
 import asyncio
+import random
 from tempfile import NamedTemporaryFile
 from imaginairy import ImaginePrompt, imagine
 from client.logger import logger
@@ -18,7 +19,7 @@ class SDTask():
     prompt: str = "No prompt"
     prompt_strength: float = 0.8
     steps: int = 40
-    seed: str = ""
+    seed: int = 0
     status: int = IDLE
     width: int = 512
     height: int = 512
@@ -54,6 +55,23 @@ class SDTask():
                 self.prompt_strength = 6.5
         else:
             self.prompt_strength = 6.5
+
+        if "steps" in data:
+            try:
+                self.steps = int(data["steps"])
+            except ValueError:
+                self.steps = 40
+        else:
+            self.steps = 40
+
+
+        if "seed" in data:
+            try:
+                self.seed = int(data["seed"])
+            except ValueError:
+                self.seed = random.randrange(0, 100000)
+        else:
+            self.seed = random.randrange(0, 100000)
 
         if "width" in data and "height" in data:
             try:
