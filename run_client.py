@@ -3,6 +3,7 @@ import tempfile
 import asyncio
 import json
 import requests
+import GPUtil
 from requests.exceptions import ConnectionError, ConnectTimeout, JSONDecodeError
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 import uuid
@@ -12,10 +13,24 @@ from client.logger import logger
 API_URL = os.environ.get("SD_API_URL", "http://127.0.0.1:5000")
 
 task_queue: list = []
+gpus: list = []
+
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+
+for gpu in GPUtil.getAvailable(limit=10):
+    gpus.append(True)
+
 
 loop = asyncio.get_event_loop()
 client_uid = ""
 client_name = ""
+
+
+def get_first_free_gpu() -> int:
+    for i in range(len(gpus)):
+        if gpus[i]:
+            return i
+    return -1
 
 
 def apply_settings():
@@ -100,9 +115,16 @@ async def task_runner():
         if len(task_queue):
             current_task: SDTask = task_queue[0]
             if current_task.ready and current_task.status == IDLE:
-                await current_task.process_task()
+                gpu = get_first_free_gpu()
+                if gpu >= 0:
+                    gpus[gpu] = False
+                    await current_task.process_task(gpu=gpu)
+                else:
+                    logger.warning("No free GPU!")
+                    await asyncio.sleep(5)
             elif current_task.status == DONE or current_task.status == ERROR:
                 await report_done(current_task)
+                gpus[current_task.gpu] = True
                 current_task.image_file.close()
                 task_queue.remove(current_task)
         else:

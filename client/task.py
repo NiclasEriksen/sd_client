@@ -27,6 +27,7 @@ class SDTask():
     task_id: int = -1
     callback = None
     result = None
+    gpu: int = 0
 
     def __init__(self, out_file: NamedTemporaryFile, json_data=None, callback=None):
         if isinstance(json_data, dict):
@@ -91,7 +92,9 @@ class SDTask():
             return False
         return True
 
-    async def process_task(self):
+    async def process_task(self, gpu=0):
+        self.gpu = gpu
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
         logger.info("Starting task process (this might take a while)")
         self.status = PROCESSING
 
