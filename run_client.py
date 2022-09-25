@@ -12,6 +12,7 @@ from client.logger import logger
 
 API_URL = os.environ.get("SD_API_URL", "http://127.0.0.1:5000")
 TEST_MODE = os.environ.get("SD_TEST_MODE", "False").lower() in ('true', '1', 'yes', 'y')
+CPU_MODE = os.environ.get("SD_CPU_MODE", "False").lower() in ('true', '1', 'yes', 'y')
 
 task_queue: list = []
 MAX_QUEUE = 5
@@ -19,8 +20,6 @@ gpus: list = []
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 
-if TEST_MODE:
-    gpus.append(True)
 
 for gpu in GPUtil.getAvailable(limit=10):
     gpus.append(True)
@@ -120,13 +119,16 @@ async def task_runner():
         if len(task_queue):
             current_task: SDTask = task_queue[0]
             if current_task.ready and current_task.status == IDLE:
-                gpu = get_first_free_gpu()
-                if gpu >= 0:
-                    gpus[gpu] = False
-                    await current_task.process_task(gpu=gpu, test_run=TEST_MODE)
+                if CPU_MODE:
+                    await current_task.process_task(gpu=0, test_run=TEST_MODE)
                 else:
-                    logger.warning("No free GPU!")
-                    await asyncio.sleep(5)
+                    gpu = get_first_free_gpu()
+                    if gpu >= 0:
+                        gpus[gpu] = False
+                        await current_task.process_task(gpu=gpu, test_run=TEST_MODE)
+                    else:
+                        logger.warning("No free GPU!")
+                        await asyncio.sleep(5)
             elif current_task.status == DONE or current_task.status == ERROR:
                 await report_done(current_task)
                 gpus[current_task.gpu] = True
