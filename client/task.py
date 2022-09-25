@@ -25,6 +25,8 @@ class SDTask():
     width: int = 512
     height: int = 512
     task_id: int = -1
+    fix_faces: bool = False
+    upscale: bool = False
     callback = None
     result = None
     gpu: int = 0
@@ -86,6 +88,15 @@ class SDTask():
                 self.width = 512
                 self.height = 512
 
+        if "fix-faces" in data:
+            if isinstance(data["fix_faces"], bool):
+                self.fix_faces = data["fix_faces"]
+        if "upscale" in data:
+            if isinstance(data["upscale"], bool):
+                self.upscale = data["upscale"]
+
+        print(data)
+
     @property
     def ready(self) -> bool:
         if not len(self.prompt) or not self.task_id >= 0:
@@ -94,7 +105,7 @@ class SDTask():
 
     async def process_task(self, gpu=0, test_run=False):
         self.gpu = gpu
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
+        # os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
         logger.info("Starting task process (this might take a while)")
         self.status = PROCESSING
 
@@ -104,7 +115,9 @@ class SDTask():
             steps=self.steps,
             width=self.width,
             height=self.height,
-            seed=self.seed
+            seed=self.seed,
+            fix_faces=self.fix_faces,
+            upscale=self.upscale
         )
         if test_run:
             import shutil

@@ -131,7 +131,8 @@ async def task_runner():
                         await asyncio.sleep(5)
             elif current_task.status == DONE or current_task.status == ERROR:
                 await report_done(current_task)
-                gpus[current_task.gpu] = True
+                if not CPU_MODE:
+                    gpus[current_task.gpu] = True
                 current_task.image_file.close()
                 task_queue.remove(current_task)
 
