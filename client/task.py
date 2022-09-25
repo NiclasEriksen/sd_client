@@ -92,7 +92,7 @@ class SDTask():
             return False
         return True
 
-    async def process_task(self, gpu=0):
+    async def process_task(self, gpu=0, test_run=False):
         self.gpu = gpu
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
         logger.info("Starting task process (this might take a while)")
@@ -106,12 +106,13 @@ class SDTask():
             height=self.height,
             seed=self.seed
         )
-
-        # import shutil
-        # shutil.copyfile("/home/fredspipa/Pictures/joy5KZ9.jpg", self.image_file.name)
-        # await asyncio.sleep(2)
-        loop = asyncio.get_running_loop()
-        _result = await loop.run_in_executor(None, imagine_process, ip, self.image_file.name)
+        if test_run:
+            import shutil
+            shutil.copyfile("/home/fredspipa/Pictures/joy5KZ9.jpg", self.image_file.name)
+            await asyncio.sleep(5)
+        else:
+            loop = asyncio.get_running_loop()
+            _result = await loop.run_in_executor(None, imagine_process, ip, self.image_file.name)
 
         file_size = os.path.getsize(self.image_file.name)
         if file_size < 100: # Just in case

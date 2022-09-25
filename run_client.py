@@ -11,11 +11,16 @@ from client.task import SDTask, DONE, ERROR, IDLE
 from client.logger import logger
 
 API_URL = os.environ.get("SD_API_URL", "http://127.0.0.1:5000")
+TEST_MODE = os.environ.get("SD_TEST_MODE", "False").lower() in ('true', '1', 'yes', 'y')
 
 task_queue: list = []
+MAX_QUEUE = 5
 gpus: list = []
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+
+if TEST_MODE:
+    gpus.append(True)
 
 for gpu in GPUtil.getAvailable(limit=10):
     gpus.append(True)
@@ -118,7 +123,7 @@ async def task_runner():
                 gpu = get_first_free_gpu()
                 if gpu >= 0:
                     gpus[gpu] = False
-                    await current_task.process_task(gpu=gpu)
+                    await current_task.process_task(gpu=gpu, test_run=TEST_MODE)
                 else:
                     logger.warning("No free GPU!")
                     await asyncio.sleep(5)
@@ -127,7 +132,8 @@ async def task_runner():
                 gpus[current_task.gpu] = True
                 current_task.image_file.close()
                 task_queue.remove(current_task)
-        else:
+
+        if len(task_queue) < MAX_QUEUE:
             try:
                 result = requests.get(API_URL + "/process_task", json={"client_uid": client_uid})
             except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
@@ -145,6 +151,7 @@ async def task_runner():
                         task_queue.append(task)
                 except JSONDecodeError:
                     logger.error("Empty response from server, invalid request?")
+
         await asyncio.sleep(1.0)
 
 
