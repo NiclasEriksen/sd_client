@@ -27,4 +27,4 @@ ADD logs $install_path/logs
 RUN --mount=type=cache,target=/root/.cache/pip pip3 install -r requirements.txt
 COPY . $install_path
 
-CMD ["python3", "run_client.py"]
+CMD ["python3.10", "run_client.py"]
