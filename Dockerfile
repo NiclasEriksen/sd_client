@@ -81,11 +81,13 @@ RUN mkdir $install_path
 
 WORKDIR $install_path
 
-COPY requirements.txt $install_path
-COPY run_client.py $install_path/run_client.py
-ADD client $install_path/client
-ADD logs $install_path/logs
-#RUN --mount=type=cache,target=/root/.cache/pip curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
+RUN git clone https://github.com/NiclasEriksen/sd_client.git $install_path
+
+
+#COPY requirements.txt $install_path
+#COPY run_client.py $install_path/run_client.py
+#ADD client $install_path/client
+#ADD logs $install_path/logs
 RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r requirements.txt
 COPY . $install_path
 
