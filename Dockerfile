@@ -89,6 +89,6 @@ RUN git clone https://github.com/NiclasEriksen/sd_client.git $install_path
 #ADD client $install_path/client
 #ADD logs $install_path/logs
 RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r requirements.txt
-COPY . $install_path
+#COPY . $install_path
 
 CMD ["python3", "run_client.py"]
