@@ -14,6 +14,10 @@ RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 git software-proper
     add-apt-repository -y ppa:deadsnakes/ppa
 RUN apt-get update && apt-get install -y python3.10 python3.10-distutils python3-pip python3-apt
 RUN apt-get -y purge python3.8 && apt-get -y autoremove
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 10
+RUN update-alternatives --auto python3
+
+
 
 
 
