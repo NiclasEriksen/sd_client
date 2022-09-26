@@ -1,8 +1,5 @@
 FROM python:3.10.7-slim-bullseye as base
 
-FROM base as base-amd64
-
-
 #FROM nvidia/cuda:11.0.3-base-ubuntu20.04
 
 
@@ -12,8 +9,6 @@ ENV NVIDIA_REQUIRE_CUDA="cuda>=11.7 brand=tesla,driver>=450,driver<451 brand=tes
 ENV NV_CUDA_CUDART_VERSION=11.7.99-1
 ENV NV_CUDA_COMPAT_PACKAGE=cuda-compat-11-7
 
-
-FROM base-amd64
 
 LABEL maintainer="NVIDIA CORPORATION <cudatools@nvidia.com>"
 
@@ -54,7 +49,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get purge --autoremove -y curl \
     && rm -rf /var/lib/apt/lists/*
 
-FROM base-amd64 as base
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_ROOT_USER_ACTION=ignore \
