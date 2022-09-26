@@ -95,7 +95,7 @@ class SDTask():
             if isinstance(data["upscale"], bool):
                 self.upscale = data["upscale"]
 
-        print(data)
+        logger.debug(data)
 
     @property
     def ready(self) -> bool:
