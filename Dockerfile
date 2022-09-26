@@ -12,7 +12,7 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 git software-properties-common gcc && \
     add-apt-repository -y ppa:deadsnakes/ppa
-RUN apt-get update && apt-get install -y python3.10 python3-distutils python3-pip python3-apt
+RUN apt-get update && apt-get install -y python3.10 python3.10-distutils python3.10-pip python3.10-apt
 
 
 ARG install_path=/usr/local/share/sd_client
