@@ -1,20 +1,18 @@
 FROM nvidia/cuda:11.0.3-base-ubuntu20.04
 
-RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 git python3 python3-pip
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_ROOT_USER_ACTION=ignore \
     SD_API_URL="https://ai.posterity.no" \
     SD_TEST_MODE=0 \
-    SD_CPU_MODE=0
+    SD_CPU_MODE=0 \
+    DEBIAN_FRONTEND=nonintercative \
+    TZ=Europe/Oslo
 
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 git python3 python3-pip
 ARG install_path=/usr/local/share/sd_client
 RUN mkdir $install_path
-# RUN mkdir /root/.cache/huggingface
-#VOLUME sd_client
-#VOLUME models
-
-#/root/.cache/huggingface
 
 WORKDIR $install_path
 
