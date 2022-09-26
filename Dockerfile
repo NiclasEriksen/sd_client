@@ -63,6 +63,7 @@ RUN mkdir $install_path
 
 WORKDIR $install_path
 
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 RUN git clone https://github.com/NiclasEriksen/sd_client.git $install_path
 
 RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r requirements.txt
