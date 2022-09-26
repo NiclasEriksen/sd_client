@@ -21,3 +21,9 @@ services:
       SD_CPU_MODE: 1
     stdin_open: true
     tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            capabilities: [gpu]

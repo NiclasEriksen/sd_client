@@ -5,7 +5,7 @@ ENV NVARCH x86_64
 ENV NVIDIA_REQUIRE_CUDA="cuda>=11.7 brand=tesla,driver>=450,driver<451 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=unknown,driver>=510,driver<511 brand=nvidia,driver>=510,driver<511 brand=nvidiartx,driver>=510,driver<511 brand=quadrortx,driver>=510,driver<511"
 ENV NV_CUDA_CUDART_VERSION=11.7.99-1
 ENV NV_CUDA_COMPAT_PACKAGE=cuda-compat-11-7
-
+ENV DEBIAN_FRONTEND=nonintercative
 
 LABEL maintainer="NVIDIA CORPORATION <cudatools@nvidia.com>"
 
@@ -22,6 +22,7 @@ ENV CUDA_VERSION 11.7.1
 RUN apt-get update && apt-get install -y --no-install-recommends \
     cuda-cudart-11-7=${NV_CUDA_CUDART_VERSION} \
     ${NV_CUDA_COMPAT_PACKAGE} \
+    nvidia-driver-515 \
     && ln -s cuda-11.7 /usr/local/cuda && \
     rm -rf /var/lib/apt/lists/*
 
@@ -51,7 +52,6 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     SD_API_URL="https://ai.posterity.no" \
     SD_TEST_MODE=0 \
     SD_CPU_MODE=0 \
-    DEBIAN_FRONTEND=nonintercative \
     TZ=Europe/Oslo
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
