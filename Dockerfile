@@ -55,7 +55,7 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     TZ=Europe/Oslo
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-RUN apt-get install -y libgl1 libglib2.0-0 git
+RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 git
 
 
 ARG install_path=/usr/local/share/sd_client
