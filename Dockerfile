@@ -3,7 +3,7 @@ FROM python:3.10.7-slim-bullseye as base
 FROM base as base-amd64
 
 
-FROM nvidia/cuda:11.0.3-base-ubuntu20.04
+#FROM nvidia/cuda:11.0.3-base-ubuntu20.04
 
 
 ENV NVARCH x86_64
@@ -11,12 +11,6 @@ ENV NVARCH x86_64
 ENV NVIDIA_REQUIRE_CUDA="cuda>=11.7 brand=tesla,driver>=450,driver<451 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=unknown,driver>=510,driver<511 brand=nvidia,driver>=510,driver<511 brand=nvidiartx,driver>=510,driver<511 brand=quadrortx,driver>=510,driver<511"
 ENV NV_CUDA_CUDART_VERSION=11.7.99-1
 ENV NV_CUDA_COMPAT_PACKAGE=cuda-compat-11-7
-
-FROM base as base-arm64
-
-ENV NVARCH sbsa
-ENV NVIDIA_REQUIRE_CUDA "cuda>=11.7"
-ENV NV_CUDA_CUDART_VERSION 11.7.99-1
 
 
 FROM base-amd64
