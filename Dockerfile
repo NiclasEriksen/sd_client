@@ -1,4 +1,4 @@
-FROM 3.10.7-slim-bullseye as base
+FROM python:3.10.7-slim-bullseye as base
 
 FROM base as base-amd64
 
