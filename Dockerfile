@@ -24,7 +24,7 @@ COPY requirements.txt $install_path
 COPY run_client.py $install_path/run_client.py
 ADD client $install_path/client
 ADD logs $install_path/logs
-RUN --mount=type=cache,target=/root/.cache/pip python3.10 -m pip install -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip python3.10 -m pip install --upgrade pip && python3.10 -m pip install -r requirements.txt
 COPY . $install_path
 
 CMD ["python3.10", "run_client.py"]
