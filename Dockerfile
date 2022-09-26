@@ -1,8 +1,5 @@
 FROM python:3.10.7-slim-bullseye as base
 
-#FROM nvidia/cuda:11.0.3-base-ubuntu20.04
-
-
 ENV NVARCH x86_64
 
 ENV NVIDIA_REQUIRE_CUDA="cuda>=11.7 brand=tesla,driver>=450,driver<451 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=unknown,driver>=510,driver<511 brand=nvidia,driver>=510,driver<511 brand=nvidiartx,driver>=510,driver<511 brand=quadrortx,driver>=510,driver<511"
@@ -22,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV CUDA_VERSION 11.7.1
 
 # For libraries in the cuda-compat-* package: https://docs.nvidia.com/cuda/eula/index.html#attachment-a
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get install -y --no-install-recommends \
     cuda-cudart-11-7=${NV_CUDA_CUDART_VERSION} \
     ${NV_CUDA_COMPAT_PACKAGE} \
     && ln -s cuda-11.7 /usr/local/cuda && \
@@ -58,7 +55,7 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     TZ=Europe/Oslo
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 git
+RUN apt-get install -y libgl1 libglib2.0-0 git
 
 
 ARG install_path=/usr/local/share/sd_client
