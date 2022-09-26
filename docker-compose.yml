@@ -14,3 +14,5 @@ services:
       SD_API_URL: "http://127.0.0.1:5000"
       SD_TEST_MODE: 1
       SD_CPU_MODE: 1
+    stdin_open: true
+    tty: true
