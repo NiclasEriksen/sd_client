@@ -1,6 +1,6 @@
 FROM nvidia/cuda:11.0.3-base-ubuntu20.04
 
-RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 git nvidia-smi python3 python3-pip
+RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 git python3 python3-pip
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_ROOT_USER_ACTION=ignore \
