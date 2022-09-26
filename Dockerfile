@@ -19,9 +19,7 @@ ENV NVIDIA_REQUIRE_CUDA "cuda>=11.7"
 ENV NV_CUDA_CUDART_VERSION 11.7.99-1
 
 
-FROM base-x86_64
-
-ARG TARGETARCH
+FROM base-amd64
 
 LABEL maintainer="NVIDIA CORPORATION <cudatools@nvidia.com>"
 
