@@ -22,9 +22,9 @@ services:
       NVIDIA_DISABLE_REQUIRE: 1
     stdin_open: true
     tty: true
-    deploy:
-      resources:
-        reservations:
-          devices:
-          - driver: nvidia
-            capabilities: [gpu]
+#    deploy:
+#      resources:
+#        reservations:
+#          devices:
+#          - driver: nvidia
+#            capabilities: [gpu]
