@@ -14,7 +14,7 @@ services:
       - models:/root/.cache/huggingface:rw
     environment:
       SD_API_URL: "https://ai.posterity.no"
-      SD_TEST_MODE: 1
+      SD_TEST_MODE: 0
       SD_CPU_MODE: 1
     stdin_open: true
     tty: true
