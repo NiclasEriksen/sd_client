@@ -4,6 +4,7 @@ import asyncio
 import json
 import requests
 import GPUtil
+import socket
 from requests.exceptions import ConnectionError, ConnectTimeout, JSONDecodeError
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 import uuid
@@ -47,7 +48,7 @@ def apply_settings():
     if not len(data["client_uid"]):
         data["client_uid"] = uuid.uuid4().__str__()
     if not len(data["client_name"]):
-        data["client_name"] = input("Pick a name for this client:\n").strip()
+        data["client_name"] = os.environ.get("SD_CLIENT_NAME", socket.gethostname())
 
     global client_uid
     global client_name
