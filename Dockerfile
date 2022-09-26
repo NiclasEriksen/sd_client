@@ -13,6 +13,8 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 git software-properties-common gcc curl && \
     add-apt-repository -y ppa:deadsnakes/ppa
 RUN apt-get update && apt-get install -y python3.10 python3.10-distutils python3-pip python3-apt
+RUN apt-get -y purge python3.8 && apt-get -y autoremove
+
 
 
 ARG install_path=/usr/local/share/sd_client
