@@ -99,7 +99,11 @@ async def report_done(task: SDTask):
             )
             logger.debug(result.json())
             logger.info("Task has been reported as done and uploaded!")
-        except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
+        except (
+                ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError,
+                JSONDecodeError
+        ) as e:
+            logger.debug(e)
             logger.error("Error when reporting task status, is server down?")
     else:
         try:
@@ -134,6 +138,7 @@ async def task_runner():
                 if not CPU_MODE:
                     gpus[current_task.gpu] = True
                 current_task.image_file.close()
+                current_task.input_image_file.close()
                 current_task = None
         else:
             try:
@@ -149,7 +154,16 @@ async def task_runner():
                             prefix="aigen_",
                             suffix=".jpg"
                         )
-                        current_task = SDTask(image_file, json_data=result.json(), callback=task_callback)
+                        input_image_file = tempfile.NamedTemporaryFile(
+                            prefix="aigen_input_",
+                            suffix=".jpg"
+                        )
+                        current_task = SDTask(
+                            out_file=image_file,
+                            in_file=input_image_file,
+                            json_data=result.json(),
+                            callback=task_callback
+                        )
                 except JSONDecodeError:
                     logger.error("Empty response from server, invalid request?")
 

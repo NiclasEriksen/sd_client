@@ -2,6 +2,8 @@ import asyncio
 import os
 import random
 from tempfile import NamedTemporaryFile
+
+import requests
 from imaginairy import ImaginePrompt, imagine
 from client.logger import logger
 
@@ -17,6 +19,9 @@ class IntegrityError(Exception):
 
 class SDTask():
     image_file: NamedTemporaryFile = None
+    input_image_file: NamedTemporaryFile =None
+    input_image_url: str = ""
+    input_image_downloaded: bool = False
     prompt: str = "No prompt"
     prompt_strength: float = 0.8
     steps: int = 40
@@ -31,11 +36,30 @@ class SDTask():
     result = None
     gpu: int = 0
 
-    def __init__(self, out_file: NamedTemporaryFile, json_data=None, callback=None):
+    def __init__(self, out_file: NamedTemporaryFile=None, in_file: NamedTemporaryFile=None, json_data=None, callback=None):
         if isinstance(json_data, dict):
             self.from_json(json_data)
         self.callback = callback
         self.image_file = out_file
+        self.input_image_file = in_file
+
+    async def download_input_image(self):
+        if not len(self.input_image_url):
+            return
+        try:
+            result = requests.get(self.input_image_url)
+        except Exception as e:
+            logger.debug(e)
+            logger.error("Unable to download input image.")
+            return
+        else:
+            if result.status_code == 200:
+                open(self.input_image_file.name, "wb").write(result.content)
+                logger.info("Saved input image as a temporary file.")
+                self.input_image_downloaded = True
+            else:
+                logger.debug(result)
+                logger.error("Failure to get input image.")
 
     def from_json(self, data: dict):
         self.status = IDLE
@@ -95,6 +119,9 @@ class SDTask():
             if isinstance(data["upscale"], bool):
                 self.upscale = data["upscale"]
 
+        if "input_image_url" in data:
+            self.input_image_url = data["input_image_url"]
+
         logger.debug(data)
 
     @property
@@ -108,6 +135,7 @@ class SDTask():
         # os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
         logger.info("Starting task process (this might take a while)")
         self.status = PROCESSING
+        await self.download_input_image()
 
         ip = ImaginePrompt(
             self.prompt,
@@ -117,7 +145,8 @@ class SDTask():
             height=self.height,
             seed=self.seed,
             fix_faces=self.fix_faces,
-            upscale=self.upscale
+            init_image=self.input_image_file.name if self.input_image_downloaded else None,
+            upscale=self.upscale,
         )
         if test_run:
             import shutil
@@ -147,4 +176,9 @@ def imagine_process(ip: ImaginePrompt, save_path: str):
         logger.error("AI generation failed.")
 
     if result != None:
-        result.save(save_path)
+        if "upscaled" in result.images:
+            result.save(save_path, image_type="upscaled")
+        elif "modified_original" in result.images:
+            result.save(save_path, image_type="modified_original")
+        else:
+            result.save(save_path)
