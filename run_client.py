@@ -2,6 +2,7 @@ import os
 import tempfile
 import asyncio
 import json
+from typing import Union
 import requests
 import GPUtil
 import socket
@@ -15,8 +16,6 @@ API_URL = os.environ.get("SD_API_URL", "http://127.0.0.1:5000")
 TEST_MODE = os.environ.get("SD_TEST_MODE", "False").lower() in ('true', '1', 'yes', 'y')
 CPU_MODE = os.environ.get("SD_CPU_MODE", "False").lower() in ('true', '1', 'yes', 'y')
 
-task_queue: list = []
-MAX_QUEUE = 5
 gpus: list = []
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -116,9 +115,9 @@ async def report_done(task: SDTask):
 
 
 async def task_runner():
+    current_task: Union[SDTask, None] = None
     while True:
-        if len(task_queue):
-            current_task: SDTask = task_queue[0]
+        if current_task:
             if current_task.ready and current_task.status == IDLE:
                 if CPU_MODE:
                     await current_task.process_task(gpu=0, test_run=TEST_MODE)
@@ -135,9 +134,8 @@ async def task_runner():
                 if not CPU_MODE:
                     gpus[current_task.gpu] = True
                 current_task.image_file.close()
-                task_queue.remove(current_task)
-
-        if len(task_queue) < MAX_QUEUE:
+                current_task = None
+        else:
             try:
                 result = requests.get(API_URL + "/process_task", json={"client_uid": client_uid})
             except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
@@ -151,8 +149,7 @@ async def task_runner():
                             prefix="aigen_",
                             suffix=".jpg"
                         )
-                        task = SDTask(image_file, json_data=result.json(), callback=task_callback)
-                        task_queue.append(task)
+                        current_task = SDTask(image_file, json_data=result.json(), callback=task_callback)
                 except JSONDecodeError:
                     logger.error("Empty response from server, invalid request?")
 
