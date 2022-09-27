@@ -5,6 +5,8 @@ from tempfile import NamedTemporaryFile
 
 import requests
 from imaginairy import ImaginePrompt, imagine
+from requests.exceptions import SSLError
+
 from client.logger import logger
 
 IDLE = 0
@@ -47,7 +49,11 @@ class SDTask():
         if not len(self.input_image_url):
             return
         try:
-            result = requests.get(self.input_image_url)
+            try:
+                result = requests.get(self.input_image_url)
+            except SSLError:
+                logger.debug("HTTPS error, trying HTTP")
+                result = requests.get(self.input_image_url.replace("https", "http"))
         except Exception as e:
             logger.debug(e)
             logger.error("Unable to download input image.")
