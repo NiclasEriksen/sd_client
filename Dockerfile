@@ -67,9 +67,7 @@ ADD logs $install_path/logs
 ADD client $install_path/client
 
 WORKDIR $install_path
-COPY . .
 
-ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $install_path/requirements.txt
 COPY . .
 
