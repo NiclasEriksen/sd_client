@@ -4,10 +4,10 @@ import random
 from tempfile import NamedTemporaryFile
 
 import requests
-from imaginairy import ImaginePrompt, imagine
 from requests.exceptions import SSLError
 
 from client.logger import logger
+from imaginairy import ImaginePrompt, imagine
 
 IDLE = 0
 PROCESSING = 1
@@ -60,7 +60,7 @@ class SDTask():
             return
         else:
             if result.status_code == 200:
-                open(self.input_image_file.name, "wb").write(result.content)
+                self.input_image_file.write(result.content)
                 logger.info("Saved input image as a temporary file.")
                 self.input_image_downloaded = True
             else:
@@ -111,8 +111,8 @@ class SDTask():
             try:
                 self.width = int(data["width"])
                 self.height = int(data["height"])
-                assert self.width % 64 == 0
-                assert self.height % 64 == 0
+                assert self.width % 64 == 0 and self.width > 0
+                assert self.height % 64 == 0 and self.height > 0
             except (ValueError, AssertionError, TypeError):
                 logger.warning("Invalid value for width/height, defaulting to 512")
                 self.width = 512

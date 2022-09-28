@@ -113,7 +113,7 @@ async def report_done(task: SDTask):
             )
             logger.debug(result.json())
             logger.warning("Task has been reported as failed!")
-        except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
+        except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError, JSONDecodeError) as e:
             logger.error("Error when reporting task status, is server down?")
 
 
