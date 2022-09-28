@@ -48,9 +48,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_ROOT_USER_ACTION=ignore \
-    SD_API_URL="https://ai.posterity.no" \
-    SD_TEST_MODE=0 \
-    SD_CPU_MODE=0 \
     TZ=Europe/Oslo
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -58,7 +55,6 @@ RUN apt-get update && apt-get install -y libgl1 libglib2.0-0
 
 
 ARG install_path=/usr/local/share/sd_client
-VOLUME $install_path
 RUN mkdir $install_path
 
 ADD requirements.txt $install_path/requirements.txt

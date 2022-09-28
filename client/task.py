@@ -140,7 +140,6 @@ class SDTask():
         self.gpu = gpu
         # os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
         logger.info("Starting task process (this might take a while)")
-        logger.info("HER DA??")
         logger.info("Prompt: \x1b[35;1m\"{0}\"\x1b[0m".format(self.prompt))
         self.status = PROCESSING
         await self.download_input_image()
@@ -157,15 +156,13 @@ class SDTask():
             upscale=self.upscale,
         )
         if test_run:
-            import shutil
-            shutil.copyfile("/home/fredspipa/Pictures/joy5KZ9.jpg", self.image_file.name)
             await asyncio.sleep(5)
         else:
             loop = asyncio.get_running_loop()
             _result = await loop.run_in_executor(None, imagine_process, ip, self.image_file.name)
 
         file_size = os.path.getsize(self.image_file.name)
-        if file_size < 100: # Just in case
+        if file_size < 100 and not test_run: # Just in case
             self.status = ERROR
         else:
             self.status = DONE

@@ -5,20 +5,15 @@ volumes:
     name: models
   torch-cache:
     name: torch-cache
-  app_dir:
-    name: app_dir
 
 services:
   sd_client:
     build: .
     volumes:
-      - app_dir:/usr/local/share/sd_client
       - models:/root/.cache/huggingface:rw
       - torch-cache:/root/.cache/torch:rw
+    env_file: .env
     environment:
-      SD_API_URL: "https://ai.posterity.no"
-      SD_TEST_MODE: 0
-      SD_CPU_MODE: 1
       NVIDIA_DISABLE_REQUIRE: 1
     stdin_open: true
     tty: true

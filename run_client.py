@@ -27,8 +27,8 @@ for gpu in GPUtil.getAvailable(limit=10):
 
 
 loop = asyncio.get_event_loop()
-client_uid = ""
-client_name = ""
+client_uid = os.environ.get("SD_CLIENT_UID", uuid.uuid4().__str__())
+client_name = os.environ.get("SD_CLIENT_NAME", socket.gethostname())
 
 
 def get_first_free_gpu() -> int:
@@ -36,28 +36,28 @@ def get_first_free_gpu() -> int:
         if gpus[i]:
             return i
     return -1
-
-
-def apply_settings():
-    data = {}
-    if os.path.exists("client_info.json"):
-        with open("client_info.json", "r+") as f:
-            data = json.load(f)
-    if not "client_uid" in data or not "client_name" in data:
-        data = {"client_uid": "", "client_name": ""}
-    if not len(data["client_uid"]):
-        data["client_uid"] = uuid.uuid4().__str__()
-    if not len(data["client_name"]):
-        data["client_name"] = os.environ.get("SD_CLIENT_NAME", socket.gethostname())
-
-    global client_uid
-    global client_name
-
-    client_uid = data["client_uid"]
-    client_name = data["client_name"].strip()
-
-    with open("client_info.json", "w") as f:
-        json.dump(data, f)
+#
+#
+# def apply_settings():
+#     data = {}
+#     if os.path.exists("client_info.json"):
+#         with open("client_info.json", "r+") as f:
+#             data = json.load(f)
+#     if not "client_uid" in data or not "client_name" in data:
+#         data = {"client_uid": "", "client_name": ""}
+#     if not len(data["client_uid"]):
+#         data["client_uid"] = uuid.uuid4().__str__()
+#     if not len(data["client_name"]):
+#         data["client_name"] = os.environ.get("SD_CLIENT_NAME", socket.gethostname())
+#
+#     global client_uid
+#     global client_name
+#
+#     client_uid = data["client_uid"]
+#     client_name = data["client_name"].strip()
+#
+#     with open("client_info.json", "w") as f:
+#         json.dump(data, f)
 
 
 def task_callback(t: SDTask):
@@ -194,5 +194,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    apply_settings()
     asyncio.run(main())
