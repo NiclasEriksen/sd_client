@@ -58,17 +58,16 @@ RUN apt-get update && apt-get install -y libgl1 libglib2.0-0
 
 
 ARG install_path=/usr/local/share/sd_client
+VOLUME $install_path
 RUN mkdir $install_path
 
-
-COPY requirements.txt $install_path/requirements.txt
-COPY run_client.py $install_path/run_client.py
+ADD requirements.txt $install_path/requirements.txt
+ADD run_client.py $install_path/run_client.py
 ADD logs $install_path/logs
 ADD client $install_path/client
 
 WORKDIR $install_path
 
 RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $install_path/requirements.txt
-COPY . .
 
 CMD ["python3", "run_client.py"]
