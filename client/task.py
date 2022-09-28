@@ -140,6 +140,7 @@ class SDTask():
         self.gpu = gpu
         # os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu)
         logger.info("Starting task process (this might take a while)")
+        logger.info("HER DA??")
         logger.info("Prompt: \x1b[35;1m\"{0}\"\x1b[0m".format(self.prompt))
         self.status = PROCESSING
         await self.download_input_image()

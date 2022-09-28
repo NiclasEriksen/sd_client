@@ -54,7 +54,7 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     TZ=Europe/Oslo
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 git
+RUN apt-get update && apt-get install -y libgl1 libglib2.0-0
 
 
 ARG install_path=/usr/local/share/sd_client
@@ -67,6 +67,9 @@ ADD logs $install_path/logs
 ADD client $install_path/client
 
 WORKDIR $install_path
+COPY . .
+
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $install_path/requirements.txt
 COPY . .
 
