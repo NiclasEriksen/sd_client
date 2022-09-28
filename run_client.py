@@ -15,6 +15,7 @@ from client.logger import logger
 API_URL = os.environ.get("SD_API_URL", "http://127.0.0.1:5000")
 TEST_MODE = os.environ.get("SD_TEST_MODE", "False").lower() in ('true', '1', 'yes', 'y')
 CPU_MODE = os.environ.get("SD_CPU_MODE", "False").lower() in ('true', '1', 'yes', 'y')
+CLIENT_VERSION = "0.1"
 
 gpus: list = []
 
@@ -72,7 +73,7 @@ def run_client() -> bool:
     resp = {}
     try:
         result = requests.put(
-            API_URL + "/register_client/{0}".format(client_name), json={"client_uid": client_uid}
+            API_URL + "/register_client/{0}".format(client_name), json={"client_uid": client_uid, "version": CLIENT_VERSION}
         )
     except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
         logger.error(e)
@@ -142,7 +143,7 @@ async def task_runner():
                 current_task = None
         else:
             try:
-                result = requests.get(API_URL + "/process_task", json={"client_uid": client_uid})
+                result = requests.get(API_URL + "/process_task", json={"client_uid": client_uid, "version": CLIENT_VERSION})
             except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
                 logger.error("Error when requesting task update, is server down? Retrying in 10 seconds.")
                 await asyncio.sleep(9)
@@ -173,7 +174,7 @@ async def task_runner():
 async def poller():
     while True:
         try:
-            result = requests.get(API_URL + "/poll", json={"client_uid": client_uid})
+            result = requests.get(API_URL + "/poll", json={"client_uid": client_uid, "version": CLIENT_VERSION} )
         except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
             logger.warning("Polling failed! Is server down?")
         await asyncio.sleep(10)
