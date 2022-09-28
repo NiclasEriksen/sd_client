@@ -172,6 +172,7 @@ class SDTask():
 
 
 def imagine_process(ip: ImaginePrompt, save_path: str):
+    logger.info("Prompt: \x1b[35m{0}\x1b[0m".format(ip.prompt_text))
     result = None
     try:
         for r in imagine([ip]):
