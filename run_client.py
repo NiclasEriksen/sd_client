@@ -29,6 +29,8 @@ for gpu in GPUtil.getAvailable(limit=10):
 loop = asyncio.get_event_loop()
 client_uid = os.environ.get("SD_CLIENT_UID", uuid.uuid4().__str__())
 client_name = os.environ.get("SD_CLIENT_NAME", socket.gethostname())
+if not len(client_uid):
+    client_uid = uuid.uuid4().__str__()
 
 
 def get_first_free_gpu() -> int:
@@ -70,7 +72,6 @@ def task_callback(t: SDTask):
 
 
 def run_client() -> bool:
-    resp = {}
     try:
         result = requests.put(
             API_URL + "/register_client/{0}".format(client_name), json={"client_uid": client_uid, "version": CLIENT_VERSION}
