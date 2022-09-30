@@ -1,6 +1,7 @@
 import asyncio
 import os
 import random
+import shutil
 from tempfile import NamedTemporaryFile
 
 import requests
@@ -157,6 +158,7 @@ class SDTask():
         )
         if test_run:
             await asyncio.sleep(5)
+            shutil.copyfile("client/missing.jpg", self.image_file.name)
         else:
             loop = asyncio.get_running_loop()
             _result = await loop.run_in_executor(None, imagine_process, ip, self.image_file.name)
@@ -171,19 +173,19 @@ class SDTask():
 
 
 def imagine_process(ip: ImaginePrompt, save_path: str):
-    result = None
     try:
-        for r in imagine([ip]):
-            result = r
-            break
+        for result in imagine([ip]):
+            if result != None:
+                if "upscaled" in result.images:
+                    logger.info("Saving upscaled image...")
+                    result.save(save_path, image_type="upscaled")
+                elif "modified_original" in result.images:
+                    logger.info("Saving modified image...")
+                    result.save(save_path, image_type="modified_original")
+                else:
+                    logger.info("Saving generated image...")
+                    result.save(save_path)
     except Exception as e:
         logger.error(e)
         logger.error("AI generation failed.")
 
-    if result != None:
-        if "upscaled" in result.images:
-            result.save(save_path, image_type="upscaled")
-        elif "modified_original" in result.images:
-            result.save(save_path, image_type="modified_original")
-        else:
-            result.save(save_path)
