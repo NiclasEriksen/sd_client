@@ -1,10 +1,8 @@
 import os
 import tempfile
 import asyncio
-import json
 from typing import Union
 import requests
-import GPUtil
 import socket
 from requests.exceptions import ConnectionError, ConnectTimeout, JSONDecodeError
 from urllib3.exceptions import MaxRetryError, NewConnectionError
@@ -13,53 +11,32 @@ from client.task import SDTask, DONE, ERROR, IDLE
 from client.logger import logger
 
 API_URL = os.environ.get("SD_API_URL", "http://127.0.0.1:5000")
+UID_MISSING = False
+CLIENT_UID = os.environ.get("SD_CLIENT_UID", uuid.uuid4().__str__())
+CLIENT_NAME = os.environ.get("SD_CLIENT_NAME", socket.gethostname())
+if not len(CLIENT_UID):
+    UID_MISSING = True
+    CLIENT_UID = uuid.uuid4().__str__()
 TEST_MODE = os.environ.get("SD_TEST_MODE", "False").lower() in ('true', '1', 'yes', 'y')
 CPU_MODE = os.environ.get("SD_CPU_MODE", "False").lower() in ('true', '1', 'yes', 'y')
-CLIENT_VERSION = "0.1"
+try:
+    VRAM = int(os.environ.get("SD_GPU_VRAM", 6))
+except ValueError:
+    VRAM = 6
 
-gpus: list = []
+CLIENT_VERSION = "0.2"
 
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-
-
-for gpu in GPUtil.getAvailable(limit=10):
-    gpus.append(True)
+CLIENT_METADATA = {
+    "test_mode": TEST_MODE,
+    "cpu_mode": CPU_MODE,
+    "vram": VRAM,
+    "version": CLIENT_VERSION,
+    "client_name": CLIENT_NAME,
+    "client_uid": CLIENT_UID
+}
 
 
 loop = asyncio.get_event_loop()
-client_uid = os.environ.get("SD_CLIENT_UID", uuid.uuid4().__str__())
-client_name = os.environ.get("SD_CLIENT_NAME", socket.gethostname())
-if not len(client_uid):
-    client_uid = uuid.uuid4().__str__()
-
-
-def get_first_free_gpu() -> int:
-    for i in range(len(gpus)):
-        if gpus[i]:
-            return i
-    return -1
-#
-#
-# def apply_settings():
-#     data = {}
-#     if os.path.exists("client_info.json"):
-#         with open("client_info.json", "r+") as f:
-#             data = json.load(f)
-#     if not "client_uid" in data or not "client_name" in data:
-#         data = {"client_uid": "", "client_name": ""}
-#     if not len(data["client_uid"]):
-#         data["client_uid"] = uuid.uuid4().__str__()
-#     if not len(data["client_name"]):
-#         data["client_name"] = os.environ.get("SD_CLIENT_NAME", socket.gethostname())
-#
-#     global client_uid
-#     global client_name
-#
-#     client_uid = data["client_uid"]
-#     client_name = data["client_name"].strip()
-#
-#     with open("client_info.json", "w") as f:
-#         json.dump(data, f)
 
 
 def task_callback(t: SDTask):
@@ -74,19 +51,32 @@ def task_callback(t: SDTask):
 def run_client() -> bool:
     try:
         result = requests.put(
-            API_URL + "/register_client/{0}".format(client_name), json={"client_uid": client_uid, "version": CLIENT_VERSION}
+            API_URL + "/register_client", json=CLIENT_METADATA
         )
     except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
         logger.error(e)
         logger.critical("ERROR DURING CONNECTION")
         return False
     else:
-        resp = result.json()
+        try:
+            resp = result.json()
+        except JSONDecodeError:
+            logger.error("We got invalid data from server when trying to register client. Aborting")
+            return False
         if "status" in resp:
             if resp["status"] != ERROR:
                 logger.info("Connected and registered on server!")
-                logger.info("Name: \"{0}\" UUID: \"{1}\"".format(client_name, client_uid))
+                logger.info("Name: \"{0}\" UUID: \"{1}\"".format(CLIENT_NAME, CLIENT_UID))
+                logger.info("Client version: \"{0}\" Reported VRAM: {1}G".format(CLIENT_VERSION, VRAM))
+                if UID_MISSING:
+                    logger.critical("Remember to add this UUID to your .env file!")
                 return True
+            elif resp["status"] == ERROR:
+                if "message" in resp:
+                    logger.error(resp["message"])
+                else:
+                    logger.error(resp)
+                return False
     logger.error(resp)
     logger.critical("Unknown error when registering on server, aborting.")
     return False
@@ -111,7 +101,7 @@ async def report_done(task: SDTask):
         try:
             result = requests.put(
                 API_URL + "/report_failed/{0}".format(task.task_id),
-                json={"client_uid": client_uid}
+                json=CLIENT_METADATA
             )
             logger.debug(result.json())
             logger.warning("Task has been reported as failed!")
@@ -125,26 +115,15 @@ async def task_runner():
     while True:
         if current_task:
             if current_task.ready and current_task.status == IDLE:
-                if CPU_MODE:
-                    await current_task.process_task(gpu=0, test_run=TEST_MODE)
-                else:
-                    gpu = get_first_free_gpu()
-                    if gpu >= 0:
-                        gpus[gpu] = False
-                        await current_task.process_task(gpu=gpu, test_run=TEST_MODE)
-                    else:
-                        logger.warning("No free GPU!")
-                        await asyncio.sleep(5)
+                await current_task.process_task(gpu=0, test_run=TEST_MODE)
             elif current_task.status == DONE or current_task.status == ERROR:
                 await report_done(current_task)
-                if not CPU_MODE:
-                    gpus[current_task.gpu] = True
                 current_task.image_file.close()
                 current_task.input_image_file.close()
                 current_task = None
         else:
             try:
-                result = requests.get(API_URL + "/process_task", json={"client_uid": client_uid, "version": CLIENT_VERSION})
+                result = requests.get(API_URL + "/process_task", json=CLIENT_METADATA)
             except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
                 logger.error("Error when requesting task update, is server down? Retrying in 10 seconds.")
                 await asyncio.sleep(9)
@@ -175,7 +154,7 @@ async def task_runner():
 async def poller():
     while True:
         try:
-            result = requests.get(API_URL + "/poll", json={"client_uid": client_uid, "version": CLIENT_VERSION} )
+            result = requests.get(API_URL + "/poll", json=CLIENT_METADATA )
         except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
             logger.warning("Polling failed! Is server down?")
         await asyncio.sleep(10)
