@@ -9,6 +9,8 @@ from urllib3.exceptions import MaxRetryError, NewConnectionError
 import uuid
 from client.task import SDTask, DONE, ERROR, IDLE
 from client.logger import logger
+import signal
+
 
 API_URL = os.environ.get("SD_API_URL", "http://127.0.0.1:5000")
 UID_MISSING = False
@@ -37,6 +39,13 @@ CLIENT_METADATA = {
 
 
 loop = asyncio.get_event_loop()
+
+
+def quit_handler(signum, frame):
+    msg = "A stop has been requested, attempting to kill AI process..."
+    print(msg, end="", flush=True)
+    loop.stop()
+    exit(1)
 
 
 def task_callback(t: SDTask):
@@ -174,4 +183,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    signal.signal(signal.SIGINT, quit_handler)
     asyncio.run(main())
