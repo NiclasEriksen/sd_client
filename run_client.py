@@ -39,11 +39,15 @@ CLIENT_METADATA = {
 
 
 loop = asyncio.get_event_loop()
+current_task_id = -1
 
 
 def quit_handler(signum, frame):
     msg = "A stop has been requested, attempting to kill AI process..."
     print(msg, end="", flush=True)
+    if current_task_id >= 0:
+        logger.info("Trying to report task as failed...")
+        report_failed(current_task_id)
     loop.stop()
     exit(1)
 
@@ -107,22 +111,28 @@ async def report_done(task: SDTask):
             logger.debug(e)
             logger.error("Error when reporting task status, is server down?")
     else:
-        try:
-            result = requests.put(
-                API_URL + "/report_failed/{0}".format(task.task_id),
-                json=CLIENT_METADATA
-            )
-            logger.debug(result.json())
-            logger.warning("Task has been reported as failed!")
-        except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError, JSONDecodeError) as e:
-            logger.error("Error when reporting task status, is server down?")
+        report_failed(task.task_id)
 
+
+def report_failed(task_id):
+    try:
+        result = requests.put(
+            API_URL + "/report_failed/{0}".format(task_id),
+            json=CLIENT_METADATA
+        )
+        logger.debug(result.json())
+        logger.warning("Task has been reported as failed!")
+    except (
+    ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError, JSONDecodeError) as e:
+        logger.error("Error when reporting task status, is server down?")
 
 
 async def task_runner():
     current_task: Union[SDTask, None] = None
+    global current_task_id
     while True:
         if current_task:
+            current_task_id = current_task.task_id
             if current_task.ready and current_task.status == IDLE:
                 await current_task.process_task(gpu=0, test_run=TEST_MODE)
             elif current_task.status == DONE or current_task.status == ERROR:
@@ -131,6 +141,7 @@ async def task_runner():
                 current_task.input_image_file.close()
                 current_task = None
         else:
+            current_task_id = -1
             try:
                 result = requests.get(API_URL + "/process_task", json=CLIENT_METADATA)
             except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
@@ -154,6 +165,7 @@ async def task_runner():
                             json_data=result.json(),
                             callback=task_callback
                         )
+                        current_task_id = current_task.task_id
                 except JSONDecodeError:
                     logger.error("Empty response from server, invalid request?")
 
