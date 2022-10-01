@@ -102,8 +102,14 @@ async def report_done(task: SDTask):
                 API_URL + "/report_complete/{0}".format(task.task_id),
                 files={"file": open(task.image_file.name, 'rb')}
             )
-            logger.debug(result.json())
-            logger.info("Task has been reported as done and uploaded!")
+            if result.status_code == 200:
+                logger.debug(result.json())
+                logger.info("Task has been reported as done and uploaded!")
+            else:
+                logger.warning(result.reason)
+                logger.warning(result.text)
+                report_failed(task.task_id)
+
         except (
                 ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError,
                 JSONDecodeError
