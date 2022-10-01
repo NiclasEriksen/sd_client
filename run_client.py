@@ -178,10 +178,11 @@ async def main():
     asyncio.get_event_loop().create_task(task_runner())
     logger.info("Starting polling task.")
     asyncio.get_event_loop().create_task(poller())
-    logger.info("Waiting for tasks from server...")
+    logger.info("Waiting for suitable tasks from server...")
     await stop_event.wait()
 
 
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, quit_handler)
+    signal.signal(signal.SIGTERM, quit_handler)
     asyncio.run(main())
