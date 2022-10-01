@@ -100,7 +100,7 @@ async def report_done(task: SDTask):
         try:
             result = requests.post(
                 API_URL + "/report_complete/{0}".format(task.task_id),
-                files={"file": open(task.image_file.name,'rb')}
+                files={"file": open(task.image_file.name, 'rb')}
             )
             logger.debug(result.json())
             logger.info("Task has been reported as done and uploaded!")
@@ -110,6 +110,7 @@ async def report_done(task: SDTask):
         ) as e:
             logger.debug(e)
             logger.error("Error when reporting task status, is server down?")
+            report_failed(task.task_id)
     else:
         report_failed(task.task_id)
 
@@ -124,7 +125,7 @@ def report_failed(task_id):
         logger.warning("Task has been reported as failed!")
     except (
     ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError, JSONDecodeError) as e:
-        logger.error("Error when reporting task status, is server down?")
+        logger.error("Error when reporting task failure, is server down?")
 
 
 async def task_runner():
