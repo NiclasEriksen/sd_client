@@ -64,6 +64,6 @@ ADD client $install_path/client
 
 WORKDIR $install_path
 
-RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $install_path/requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $install_path/requirements.txt --extra-index-url https://download.pytorch.org/whl/cu113
 
 CMD ["python3", "run_client.py"]
