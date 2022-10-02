@@ -57,10 +57,10 @@ RUN apt-get update && apt-get install -y libgl1 libglib2.0-0
 ARG install_path=/usr/local/share/sd_client
 RUN mkdir $install_path
 
-ADD requirements.txt $install_path/requirements.txt
-ADD run_client.py $install_path/run_client.py
 ADD logs $install_path/logs
+ADD requirements.txt $install_path/requirements.txt
 ADD client $install_path/client
+ADD run_client.py $install_path/run_client.py
 
 WORKDIR $install_path
 

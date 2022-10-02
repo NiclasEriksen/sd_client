@@ -103,8 +103,14 @@ async def report_done(task: SDTask):
                 files={"file": open(task.image_file.name, 'rb')}
             )
             if result.status_code == 200:
-                logger.debug(result.json())
-                logger.info("Task has been reported as done and uploaded!")
+                # logger.debug(result.json())
+                resp = result.json()
+                if resp["status"] == DONE:
+                    logger.info("Task has been reported as done and uploaded!")
+                else:
+                    logger.error("Error during reporting of task:")
+                    logger.error(resp["message"])
+
             else:
                 logger.warning(result.reason)
                 logger.warning(result.text)
