@@ -119,7 +119,7 @@ class SDTask():
                 self.width = 512
                 self.height = 512
 
-        if "fix-faces" in data:
+        if "fix_faces" in data:
             if isinstance(data["fix_faces"], bool):
                 self.fix_faces = data["fix_faces"]
         if "upscale" in data:
@@ -176,12 +176,12 @@ def imagine_process(ip: ImaginePrompt, save_path: str):
     try:
         for result in imagine([ip]):
             if result != None:
-                if "upscaled" in result.images:
-                    logger.info("Saving upscaled image...")
-                    result.save(save_path, image_type="upscaled")
-                elif "modified_original" in result.images:
+                if "modified_original" in result.images:
                     logger.info("Saving modified image...")
                     result.save(save_path, image_type="modified_original")
+                elif "upscaled" in result.images:
+                    logger.info("Saving upscaled image...")
+                    result.save(save_path, image_type="upscaled")
                 else:
                     logger.info("Saving generated image...")
                     result.save(save_path)
