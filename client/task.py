@@ -176,12 +176,12 @@ def imagine_process(ip: ImaginePrompt, save_path: str):
     try:
         for result in imagine([ip]):
             if result != None:
-                if "modified_original" in result.images:
-                    logger.info("Saving modified image...")
-                    result.save(save_path, image_type="modified_original")
-                elif "upscaled" in result.images:
+                if "upscaled" in result.images:
                     logger.info("Saving upscaled image...")
                     result.save(save_path, image_type="upscaled")
+                elif "modified_original" in result.images:
+                    logger.info("Saving modified image...")
+                    result.save(save_path, image_type="modified_original")
                 else:
                     logger.info("Saving generated image...")
                     result.save(save_path)
