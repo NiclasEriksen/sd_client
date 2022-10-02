@@ -35,6 +35,7 @@ class SDTask():
     task_id: int = -1
     fix_faces: bool = False
     upscale: bool = False
+    tileable: bool = False
     callback = None
     result = None
     gpu: int = 0
@@ -125,6 +126,9 @@ class SDTask():
         if "upscale" in data:
             if isinstance(data["upscale"], bool):
                 self.upscale = data["upscale"]
+        if "tileable" in data:
+            if isinstance(data["tileable"], bool):
+                self.tileable = data["tileable"]
 
         if "input_image_url" in data:
             self.input_image_url = data["input_image_url"]
@@ -155,6 +159,7 @@ class SDTask():
             fix_faces=self.fix_faces,
             init_image=self.input_image_file.name if self.input_image_downloaded else None,
             upscale=self.upscale,
+            tile_mode=self.tileable
         )
         if test_run:
             await asyncio.sleep(5)
