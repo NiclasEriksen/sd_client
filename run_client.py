@@ -26,7 +26,7 @@ try:
 except ValueError:
     VRAM = 6
 
-CLIENT_VERSION = "0.2"
+CLIENT_VERSION = "0.3"
 
 CLIENT_METADATA = {
     "test_mode": TEST_MODE,
