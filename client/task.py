@@ -4,11 +4,15 @@ import random
 import shutil
 from tempfile import NamedTemporaryFile
 
+import imaginairy.api
 import requests
 from requests.exceptions import SSLError
 
 from client.logger import logger
 from imaginairy import ImaginePrompt, imagine
+
+imaginairy.api.logger = logger
+imaginairy.schema.logger = logger
 
 IDLE = 0
 PROCESSING = 1
