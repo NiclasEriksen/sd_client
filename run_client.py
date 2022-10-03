@@ -55,6 +55,7 @@ class ListenFilter(logging.Filter):
 "    "
 
 logger.debug(CLIENT_METADATA)
+logger.debug("CUDA_VISIBLE_DEVICES={0}".format(os.environ.get("CUDA_VISIBLE_DEVICES", -1)))
 
 
 loop = asyncio.get_event_loop()
