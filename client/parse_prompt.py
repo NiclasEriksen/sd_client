@@ -36,7 +36,7 @@ def parse_prompt(prompt) -> Union[str, list]:
                     continue
 
 
-            w_prompts.append((current_str.lstrip().rstrip(), w))
+            w_prompts.append((current_str.lstrip().rstrip(), max(0.0, w)))
             current_str = ""
 
         return w_prompts
