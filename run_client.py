@@ -1,3 +1,4 @@
+import logging
 import os
 import tempfile
 import asyncio
@@ -37,6 +38,22 @@ CLIENT_METADATA = {
     "client_uid": CLIENT_UID
 }
 
+messages = {
+    "facefix1":     "    Fixing 😊 's in 🖼  using CodeFormer...",
+    "upscale":      "    Upscaling 🖼  using real-ESRGAN...",
+    "facefix2":     "    Fixing 😊 's in big 🖼  using CodeFormer...",
+    "begin":        "Generating 🖼  :"
+}
+
+
+class ListenFilter(logging.Filter):
+    def filter(self, record):
+        if record.getMessage().startswith():
+            pass
+        return True
+
+"    "
+
 logger.debug(CLIENT_METADATA)
 
 
@@ -46,7 +63,7 @@ current_task_id = -1
 
 def quit_handler(signum, frame):
     msg = "A stop has been requested, attempting to kill AI process..."
-    logger.warning(msg, end="", flush=True)
+    logger.warning(msg)
     if current_task_id >= 0:
         logger.info("Trying to report task as failed...")
         report_failed(current_task_id)
@@ -194,7 +211,7 @@ async def task_runner():
 async def poller():
     while True:
         try:
-            result = requests.get(API_URL + "/poll", json=CLIENT_METADATA )
+            _result = requests.get(API_URL + "/poll", json=CLIENT_METADATA )
         except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
             logger.warning("Polling failed! Is server down?")
         await asyncio.sleep(10)

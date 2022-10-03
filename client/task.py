@@ -3,13 +3,16 @@ import os
 import random
 import shutil
 from tempfile import NamedTemporaryFile
+from typing import Union
 
 import imaginairy.api
 import requests
 from requests.exceptions import SSLError
 
 from client.logger import logger
-from imaginairy import ImaginePrompt, imagine
+from imaginairy import ImaginePrompt, imagine, WeightedPrompt
+
+from client.parse_prompt import parse_prompt
 
 imaginairy.api.logger = logger
 imaginairy.schema.logger = logger
@@ -153,8 +156,14 @@ class SDTask():
         self.status = PROCESSING
         await self.download_input_image()
 
+        parsed_prompt = parse_prompt(self.prompt)
+        if isinstance(parsed_prompt, list):
+            prompt = [WeightedPrompt(p[0], weight=p[1]) for p in parsed_prompt]
+        else:
+            prompt = parsed_prompt
+
         ip = ImaginePrompt(
-            self.prompt,
+            prompt,
             prompt_strength=self.prompt_strength,
             steps=self.steps,
             width=self.width,
