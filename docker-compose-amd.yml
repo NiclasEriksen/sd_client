@@ -1,0 +1,23 @@
+version: "3.9"
+
+volumes:
+  models:
+    name: models
+  torch-cache:
+    name: torch-cache
+  ff-cache:
+    name: ff-cache
+  im-cache:
+    name: im-cache
+
+services:
+  sd_client:
+    build: ../sd_controller
+    volumes:
+      - models:/root/.cache/huggingface:rw
+      - torch-cache:/root/.cache/torch:rw
+      - ff-cache:/usr/local/lib/python3.10/site-packages/facexlib/weights:rw
+      - im-cache:/root/.cache/imaginairy:rw
+    env_file: ../sd_controller/.env
+    stdin_open: true
+    tty: true
