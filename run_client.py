@@ -37,6 +37,8 @@ CLIENT_METADATA = {
     "client_uid": CLIENT_UID
 }
 
+logger.debug(CLIENT_METADATA)
+
 
 loop = asyncio.get_event_loop()
 current_task_id = -1
@@ -44,7 +46,7 @@ current_task_id = -1
 
 def quit_handler(signum, frame):
     msg = "A stop has been requested, attempting to kill AI process..."
-    print(msg, end="", flush=True)
+    logger.warning(msg, end="", flush=True)
     if current_task_id >= 0:
         logger.info("Trying to report task as failed...")
         report_failed(current_task_id)
@@ -112,6 +114,8 @@ async def report_done(task: SDTask):
                     logger.error(resp["message"])
 
             else:
+                logger.debug(result.status_code)
+                logger.debug(result.content)
                 logger.warning(result.reason)
                 logger.warning(result.text)
                 report_failed(task.task_id)
@@ -180,6 +184,8 @@ async def task_runner():
                         )
                         current_task_id = current_task.task_id
                 except JSONDecodeError:
+                    logger.debug(result)
+                    logger.debug(result.content)
                     logger.error("Empty response from server, invalid request?")
 
         await asyncio.sleep(1.0)

@@ -2,8 +2,15 @@ import os
 import logging
 import datetime
 
+log_level = logging.INFO
+log_level_env = os.environ.get("SD_LOG_LEVEL", "info")
+
+if log_level_env == "debug":
+    log_level = logging.DEBUG
+
+
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(log_level)
 
 # Define format for logs
 fmt_1 = "%(asctime)s"

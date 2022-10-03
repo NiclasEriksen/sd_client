@@ -162,7 +162,7 @@ class SDTask():
             tile_mode=self.tileable
         )
         if test_run:
-            await asyncio.sleep(5)
+            await asyncio.sleep(10)
             shutil.copyfile("client/missing.jpg", self.image_file.name)
         else:
             loop = asyncio.get_running_loop()
