@@ -1,5 +1,5 @@
 from typing import Union
-from logger import logger
+from client.logger import logger
 
 
 def is_number(s):
