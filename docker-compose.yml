@@ -14,10 +14,10 @@ services:
   sd_client:
     build: .
     volumes:
-      - models:/root/.cache/huggingface:rwx
-      - torch-cache:/root/.cache/torch:rwx
-      - ff-cache:/usr/local/lib/python3.10/site-packages/facexlib/weights:rwx
-      - im-cache:/root/.cache/imaginairy:rwx
+      - models:/root/.cache/huggingface:rw
+      - torch-cache:/root/.cache/torch:rw
+      - ff-cache:/usr/local/lib/python3.10/site-packages/facexlib/weights:rw
+      - im-cache:/root/.cache/imaginairy:rw
     env_file: .env
     environment:
       NVIDIA_DISABLE_REQUIRE: 1
