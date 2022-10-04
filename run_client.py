@@ -178,7 +178,7 @@ async def task_runner():
         else:
             current_task_id = -1
             try:
-                result = requests.put(API_URL + "/process_task", json=CLIENT_METADATA)
+                result = requests.put(API_URL + "/process_task", json=CLIENT_METADATA, headers={'Cache-Control': 'no-cache'})
             except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
                 logger.error("Error when requesting task update, is server down? Retrying in 10 seconds.")
                 await asyncio.sleep(9)
