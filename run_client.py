@@ -178,7 +178,7 @@ async def task_runner():
         else:
             current_task_id = -1
             try:
-                result = requests.put(API_URL + "/process_task", json=CLIENT_METADATA, headers={'Cache-Control': 'no-cache'})
+                result = requests.put(API_URL + "/process_task/" + CLIENT_UID, json=CLIENT_METADATA, headers={'Cache-Control': 'no-cache'})
             except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
                 logger.error("Error when requesting task update, is server down? Retrying in 10 seconds.")
                 await asyncio.sleep(9)
@@ -241,8 +241,9 @@ async def main():
     if not connected:
         return
     stop_event = asyncio.Event()
-    logger.info("Running test task...")
-    await test_task()
+    if not TEST_MODE:
+        logger.info("Running test task...")
+        await test_task()
     logger.info("Starting processing task.")
     asyncio.get_event_loop().create_task(task_runner())
     logger.info("Starting polling task.")
