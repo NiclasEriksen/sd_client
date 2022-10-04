@@ -23,6 +23,7 @@ services:
       NVIDIA_DISABLE_REQUIRE: 1
     stdin_open: true
     tty: true
+    restart: always
     deploy:
       resources:
         reservations:
