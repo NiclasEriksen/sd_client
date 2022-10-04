@@ -218,11 +218,31 @@ async def poller():
         await asyncio.sleep(10)
 
 
+async def test_task():
+    image_file = tempfile.NamedTemporaryFile(
+        prefix="test_",
+        suffix=".jpg"
+    )
+    test_data = {
+        'task_id': -1, 'prompt': 'Test machines under heavy load', 'prompt_strength': 7.0, 'steps': 1,
+        'seed': 123456, 'width': 64, 'height': 64, 'upscale': False, 'fix_faces': False, 'tileable': False,
+        'input_image_url': '', 'status': 1
+    }
+    task = SDTask(
+        out_file=image_file,
+        json_data=test_data,
+        callback=task_callback
+    )
+    await task.process_task()
+
+
 async def main():
     connected = run_client()
     if not connected:
         return
     stop_event = asyncio.Event()
+    logger.info("Running test task...")
+    await test_task()
     logger.info("Starting processing task.")
     asyncio.get_event_loop().create_task(task_runner())
     logger.info("Starting polling task.")
