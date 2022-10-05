@@ -5,7 +5,7 @@ import shutil
 from tempfile import NamedTemporaryFile
 from typing import Union
 
-import imaginairy.api
+from imaginAIry import imaginairy
 import requests
 from requests.exceptions import SSLError
 from logging import Filter
