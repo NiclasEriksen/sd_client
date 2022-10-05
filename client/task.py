@@ -16,6 +16,7 @@ from client.parse_prompt import parse_prompt
 
 imaginairy.api.logger = logger
 imaginairy.schema.logger = logger
+imaginairy.samplers.logger = logger
 
 IDLE = 0
 PROCESSING = 1
