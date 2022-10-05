@@ -208,6 +208,9 @@ async def task_runner():
         if current_task:
             current_task_id = current_task.task_id
             if current_task.ready and current_task.status == IDLE:
+                progress_filter.plms_progress = 0.0
+                progress_filter.stage = 0
+                progress_filter.stage_max = 0
                 await current_task.process_task(gpu=0, test_run=TEST_MODE)
             elif current_task.status == DONE or current_task.status == ERROR:
                 await report_done(current_task)
@@ -216,6 +219,9 @@ async def task_runner():
                 current_task = None
         else:
             current_task_id = -1
+            progress_filter.plms_progress = 0.0
+            progress_filter.stage = 0
+            progress_filter.stage_max = 0
             try:
                 result = requests.put(API_URL + "/process_task/" + CLIENT_UID, json=CLIENT_METADATA, headers={'Cache-Control': 'no-cache'})
             except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
@@ -258,6 +264,18 @@ async def poller():
         await asyncio.sleep(1)
 
 
+async def progress_reporter():
+    while True:
+        if current_task_id >= 0:
+            try:
+                _result = requests.get(API_URL + "/progress_update/{0}".format(current_task_id), json={"progress": progress_filter.progress})
+            except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
+                logger.warning("Reporting progress failed! Is server down?")
+                await asyncio.sleep(10)
+        await asyncio.sleep(1)
+
+
+
 async def test_task():
     image_file = tempfile.NamedTemporaryFile(
         prefix="test_",
@@ -287,6 +305,8 @@ async def main():
     logger.info("Starting processing task.")
     asyncio.get_event_loop().create_task(task_runner())
     logger.info("Starting polling task.")
+    asyncio.get_event_loop().create_task(progress_reporter())
+    logger.info("Starting progress reporting task.")
     asyncio.get_event_loop().create_task(poller())
     logger.info("Waiting for suitable tasks from server...")
     await stop_event.wait()
