@@ -11,8 +11,14 @@ from requests.exceptions import SSLError
 from logging import Filter
 from client.logger import logger, PROGRESS_LEVEL
 from imaginAIry import imaginairy
-from imaginairy import ImaginePrompt, imagine, WeightedPrompt, samplers
-from imaginairy.samplers import plms
+# from imaginairy import ImaginePrompt, imagine, WeightedPrompt, samplers
+# from imaginairy.samplers import plms
+
+ImaginePrompt = imaginairy.ImaginePrompt
+imagine = imaginairy.imagine
+WeightedPrompt = imaginairy.WeightedPrompt
+samplers = imaginairy.samplers
+plms = samplers.plms
 
 from client.parse_prompt import parse_prompt
 
