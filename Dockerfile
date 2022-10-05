@@ -56,12 +56,14 @@ RUN apt-get update && apt-get install -y libgl1 libglib2.0-0
 
 ARG install_path=/usr/local/share/sd_client
 RUN mkdir $install_path
+RUN mkdir $install_path/imaginAIry
 
 ADD requirements.txt $install_path/requirements.txt
+ADD imaginAIry/requirements-dev.txt $install_path/imaginAIry/requirements-dev.txt
 RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $install_path/requirements.txt --extra-index-url "https://download.pytorch.org/whl/cu113"
+RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $install_path/imaginAIry/requirements-dev.txt --extra-index-url "https://download.pytorch.org/whl/cu113"
 
 ADD imaginAIry $install_path/imaginAIry
-RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $install_path/imaginAIry/requirements-dev.txt --extra-index-url "https://download.pytorch.org/whl/cu113"
 ADD logs $install_path/logs
 ADD client $install_path/client
 ADD run_client.py $install_path/run_client.py

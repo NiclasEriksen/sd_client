@@ -60,9 +60,11 @@ class ProgressFilter(Filter):
 
     @property
     def progress(self) -> float:
-        if self.stage == 0:
-            return self.plms_progress * (1.0 / self.stage_max)
-        return self.stage / self.stage_max
+        if self.stage_max > 0:
+            if self.stage == 0:
+                return self.plms_progress * (1.0 / self.stage_max)
+            return self.stage / self.stage_max
+        return self.plms_progress
 
     def parse_progress(self, str):
         if str.startswith("STAGE:"):
