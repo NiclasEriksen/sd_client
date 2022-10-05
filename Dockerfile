@@ -62,8 +62,10 @@ ADD requirements.txt $install_path/requirements.txt
 ADD imaginAIry/requirements-dev.txt $install_path/imaginAIry/requirements-dev.txt
 RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $install_path/imaginAIry/requirements-dev.txt -r $install_path/requirements.txt --extra-index-url "https://download.pytorch.org/whl/cu113"
 
+ADD "https://api.github.com/repos/NiclasEriksen/imaginAIry/commits?per_page=1" latest_commit
 ADD imaginAIry $install_path/imaginAIry
 ADD logs $install_path/logs
+ADD "https://api.github.com/repos/NiclasEriksen/sd_client/commits?per_page=1" latest_commit
 ADD client $install_path/client
 ADD run_client.py $install_path/run_client.py
 

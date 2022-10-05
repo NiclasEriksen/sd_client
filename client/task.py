@@ -8,8 +8,7 @@ from typing import Union
 import imaginairy.api
 import requests
 from requests.exceptions import SSLError
-from logging import Filter
-from client.logger import logger, PROGRESS_LEVEL
+from client.logger import logger
 from imaginairy import ImaginePrompt, imagine, WeightedPrompt, samplers
 from imaginairy.samplers import plms
 
