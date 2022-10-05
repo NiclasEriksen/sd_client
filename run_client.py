@@ -9,7 +9,7 @@ from requests.exceptions import ConnectionError, ConnectTimeout, JSONDecodeError
 from urllib3.exceptions import MaxRetryError, NewConnectionError
 import uuid
 from client.task import SDTask, DONE, ERROR, IDLE
-from client.logger import logger
+from client.logger import logger, PROGRESS_LEVEL
 import signal
 
 
@@ -48,12 +48,11 @@ messages = {
 
 class ListenFilter(logging.Filter):
     def filter(self, record):
-        if record.getMessage().startswith():
-            pass
+        if record.levelno == PROGRESS_LEVEL:
+            logger.info(record.getMessage())
         return True
 
-"    "
-
+logger.addFilter(ListenFilter())
 logger.debug(CLIENT_METADATA)
 logger.debug("CUDA_VISIBLE_DEVICES={0}".format(os.environ.get("CUDA_VISIBLE_DEVICES", -1)))
 
