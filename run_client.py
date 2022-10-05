@@ -52,6 +52,8 @@ class ProgressFilter(Filter):
     stage = 0
     stage_max = 0
     plms_progress = 0.0
+    plms_steps = 40
+    stage_steps = 15
     def filter(self, record):
         if record.levelno == PROGRESS_LEVEL:
             self.parse_progress(record.getMessage())
@@ -59,11 +61,17 @@ class ProgressFilter(Filter):
         return True
 
     @property
+    def plms_weight(self) -> float:
+        return self.plms_steps / (self.plms_steps + self.stage_steps * self.stage_max)
+
+    @property
+    def stage_weight(self):
+        return self.stage_steps / (self.plms_steps + self.stage_steps * self.stage_max)
+
+    @property
     def progress(self) -> float:
         if self.stage_max > 0:
-            if self.stage == 0:
-                return self.plms_progress * (1.0 / (self.stage_max + 1))
-            return (self.stage + 1) / (self.stage_max + 1)
+            return self.plms_progress * self.plms_weight + self.stage * self.stage_weight
         return self.plms_progress
 
     def parse_progress(self, str):
@@ -211,6 +219,7 @@ async def task_runner():
                 progress_filter.plms_progress = 0.0
                 progress_filter.stage = 0
                 progress_filter.stage_max = 0
+                progress_filter.plms_steps = current_task.steps
                 await current_task.process_task(gpu=0, test_run=TEST_MODE)
             elif current_task.status == DONE or current_task.status == ERROR:
                 await report_done(current_task)
