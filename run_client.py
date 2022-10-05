@@ -166,7 +166,7 @@ async def report_done(task: SDTask):
     if task.status == DONE:
         try:
             result = requests.post(
-                API_URL + "/report_complete/{0}".format(task.task_id),
+                API_URL + "/report_complete/{0}/{1}".format(task.task_id, 1 if task.nsfw else 0),
                 files={"file": open(task.image_file.name, 'rb')}
             )
             if result.status_code == 200:

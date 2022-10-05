@@ -46,6 +46,7 @@ class SDTask():
     fix_faces: bool = False
     upscale: bool = False
     tileable: bool = False
+    nsfw = False
     callback = None
     result = None
     gpu: int = 0
@@ -183,7 +184,7 @@ class SDTask():
             shutil.copyfile("client/missing.jpg", self.image_file.name)
         else:
             loop = asyncio.get_running_loop()
-            _result = await loop.run_in_executor(None, imagine_process, ip, self.image_file.name)
+            _result = await loop.run_in_executor(None, imagine_process, ip, self)
 
         file_size = os.path.getsize(self.image_file.name)
         if file_size < 100 and not test_run: # Just in case
@@ -194,20 +195,22 @@ class SDTask():
             self.callback(self)
 
 
-def imagine_process(ip: ImaginePrompt, save_path: str):
+def imagine_process(ip: ImaginePrompt, task: SDTask):
 
     try:
         for result in imagine([ip]):
             if result != None:
                 if "upscaled" in result.images:
                     logger.info("Saving upscaled image...")
-                    result.save(save_path, image_type="upscaled")
+                    result.save(task.image_file.name, image_type="upscaled")
                 elif "modified_original" in result.images:
                     logger.info("Saving modified image...")
-                    result.save(save_path, image_type="modified_original")
+                    result.save(task.image_file.name, image_type="modified_original")
                 else:
                     logger.info("Saving generated image...")
-                    result.save(save_path)
+                    result.save(task.image_file.name)
+                task.nsfw = result.is_nsfw
+
     except Exception as e:
         logger.error(e)
         logger.error("AI generation failed.")
