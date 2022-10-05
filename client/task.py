@@ -10,13 +10,12 @@ import requests
 from requests.exceptions import SSLError
 
 from client.logger import logger
-from imaginairy import ImaginePrompt, imagine, WeightedPrompt
+from imaginairy import ImaginePrompt, imagine, WeightedPrompt, samplers
 
 from client.parse_prompt import parse_prompt
 
 imaginairy.api.logger = logger
 imaginairy.schema.logger = logger
-imaginairy.samplers.logger = logger
 
 IDLE = 0
 PROCESSING = 1
@@ -192,6 +191,7 @@ class SDTask():
 
 
 def imagine_process(ip: ImaginePrompt, save_path: str):
+    samplers.logger = logger
     try:
         for result in imagine([ip]):
             if result != None:
