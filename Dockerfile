@@ -63,6 +63,7 @@ RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $instal
 ADD logs $install_path/logs
 ADD client $install_path/client
 ADD run_client.py $install_path/run_client.py
+ADD imaginAIry $install_path/imaginAiry
 
 WORKDIR $install_path
 
