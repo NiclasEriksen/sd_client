@@ -191,7 +191,7 @@ class SDTask():
 
 
 def imagine_process(ip: ImaginePrompt, save_path: str):
-    samplers.logger = logger
+    samplers.plms.logger = logger
     try:
         for result in imagine([ip]):
             if result != None:
