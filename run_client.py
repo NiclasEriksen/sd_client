@@ -1,4 +1,4 @@
-import logging
+from logging import Filter
 import os
 import tempfile
 import asyncio
@@ -45,20 +45,58 @@ messages = {
     "begin":        "Generating 🖼  :"
 }
 
+current_task_id = -1
 
-class ListenFilter(logging.Filter):
+
+class ProgressFilter(Filter):
+    stage = 0
+    stage_max = 0
+    plms_progress = 0.0
     def filter(self, record):
         if record.levelno == PROGRESS_LEVEL:
-            logger.info(record.getMessage())
+            self.parse_progress(record.getMessage())
+            return False
         return True
 
-logger.addFilter(ListenFilter())
+    @property
+    def progress(self) -> float:
+        if self.stage == 0:
+            return self.plms_progress * (1.0 / self.stage_max)
+        return self.stage / self.stage_max
+
+    def parse_progress(self, str):
+        if str.startswith("STAGE:"):
+            st1 = str.split("STAGE:")
+            try:
+                st2 = st1[1].split("/")
+                self.stage = int(st2[0])
+                self.stage_max = int(st2[1])
+            except (ValueError, IndexError):
+                self.stage = 0
+                self.stage_max = 0
+            logger.info("Stage {0} of {1}".format(self.stage, self.stage_max))
+
+        else:
+            s = str.split("/")
+            if len(s) == 2:
+                try:
+                    s1 = int(s[0])
+                    s2 = int(s[1])
+                except ValueError:
+                    s1 = s2 = 0
+
+                self.plms_progress = min(1.0, max(0.0, s1 / s2))
+
+                logger.progress("PLMS step {0} of {1}".format(s1, s2))
+
+
+progress_filter = ProgressFilter()
+logger.addFilter(progress_filter)
 logger.debug(CLIENT_METADATA)
 logger.debug("CUDA_VISIBLE_DEVICES={0}".format(os.environ.get("CUDA_VISIBLE_DEVICES", -1)))
 
 
 loop = asyncio.get_event_loop()
-current_task_id = -1
 
 
 def quit_handler(signum, frame):
@@ -211,10 +249,11 @@ async def task_runner():
 async def poller():
     while True:
         try:
-            _result = requests.get(API_URL + "/poll", json=CLIENT_METADATA )
+            _result = requests.get(API_URL + "/poll", json=CLIENT_METADATA | {"progress": progress_filter.progress})
         except (ConnectionError, ConnectTimeout, ConnectionRefusedError, MaxRetryError, NewConnectionError) as e:
             logger.warning("Polling failed! Is server down?")
-        await asyncio.sleep(10)
+            await asyncio.sleep(10)
+        await asyncio.sleep(1)
 
 
 async def test_task():

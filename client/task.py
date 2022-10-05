@@ -25,27 +25,6 @@ DONE = 2
 ERROR = 3
 
 
-class ProgressFilter(Filter):
-    def filter(self, record):
-        if record.levelno == PROGRESS_LEVEL:
-            self.parse_progress(record.getMessage())
-            return False
-        return True
-
-    def parse_progress(self, str) -> (int, int):
-        s = str.split("/")
-        if len(s) == 2:
-            try:
-                s1 = int(s[0])
-                s2 = int(s[1])
-            except ValueError:
-                s1 = s2 = 0
-            logger.info("Step {0} of {1}".format(s1, s2))
-
-
-f = ProgressFilter()
-logger.addFilter(f)
-
 
 class IntegrityError(Exception):
     pass
@@ -70,6 +49,7 @@ class SDTask():
     callback = None
     result = None
     gpu: int = 0
+    progress: float = 0.0
 
     def __init__(self, out_file: NamedTemporaryFile=None, in_file: NamedTemporaryFile=None, json_data=None, callback=None):
         if isinstance(json_data, dict):
