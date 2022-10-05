@@ -66,10 +66,9 @@ ADD logs $install_path/logs
 ADD client $install_path/client
 ADD run_client.py $install_path/run_client.py
 
-WORKDIR $install_path
-RUN cd imaginAIry
+WORKDIR $install_path/imaginAIry
 RUN python3 setup.py
-RUN cd ../
+WORKDIR $install_path
 
 
 CMD ["python3", "run_client.py"]
