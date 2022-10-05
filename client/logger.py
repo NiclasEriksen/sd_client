@@ -5,13 +5,22 @@ import datetime
 log_level = logging.INFO
 log_level_env = os.environ.get("SD_LOG_LEVEL", "info")
 
+PROGRESS_LEVEL = 9
 if log_level_env == "debug":
-    log_level = logging.DEBUG
+    log_level = PROGRESS_LEVEL
 
 
+logging.addLevelName(PROGRESS_LEVEL, "PROGRESS")
+def progressv(self, message, *args, **kws):
+    if self.isEnabledFor(PROGRESS_LEVEL):
+        # Yes, logger takes its '*args' as 'args'.
+        self._log(PROGRESS_LEVEL, message, args, **kws)
+
+logging.Logger.progress = progressv
 
 logger = logging.getLogger(__name__)
-logger.setLevel(log_level)
+logger.setLevel(PROGRESS_LEVEL)
+
 
 # Define format for logs
 fmt_1 = "%(asctime)s"
@@ -41,6 +50,7 @@ class CustomFormatter(logging.Formatter):
         super().__init__()
         self.fmt = fmt1 + "|" + fmt2 + "|" + fmt3
         self.FORMATS = {
+            PROGRESS_LEVEL: fmt2 + "|" + fmt3,
             logging.DEBUG: self.grey + fmt1 + "|" + self.grey + fmt2 + self.reset + "| " + fmt3,
             logging.INFO: self.grey + fmt1 + "|" + self.blue + fmt2 + self.reset + "| " + fmt3,
             logging.WARNING: self.grey + fmt1 + "|" + self.yellow + fmt2 + self.reset + " |" + fmt3,
@@ -54,7 +64,7 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 stdout_handler = logging.StreamHandler()
-stdout_handler.setLevel(logging.DEBUG)
+stdout_handler.setLevel(PROGRESS_LEVEL)
 stdout_handler.setFormatter(CustomFormatter(fmt_1, fmt_2, fmt_3))
 
 logger.addHandler(stdout_handler)

@@ -8,8 +8,9 @@ from typing import Union
 import imaginairy.api
 import requests
 from requests.exceptions import SSLError
-
-from client.logger import logger
+from logging import Filter
+from client.logger import logger, PROGRESS_LEVEL
+from imaginAIry import imaginairy
 from imaginairy import ImaginePrompt, imagine, WeightedPrompt, samplers
 from imaginairy.samplers import plms
 
@@ -23,6 +24,28 @@ IDLE = 0
 PROCESSING = 1
 DONE = 2
 ERROR = 3
+
+
+class ProgressFilter(Filter):
+    def filter(self, record):
+        if record.levelno == PROGRESS_LEVEL:
+            self.parse_progress(record.getMessage())
+            return False
+        return True
+
+    def parse_progress(self, str) -> (int, int):
+        s = str.split("/")
+        if len(s) == 2:
+            try:
+                s1 = int(s[0])
+                s2 = int(s[1])
+            except ValueError:
+                s1 = s2 = 0
+            logger.info("Step {0} of {1}".format(s1, s2))
+
+
+f = ProgressFilter()
+logger.addFilter(f)
 
 
 class IntegrityError(Exception):
