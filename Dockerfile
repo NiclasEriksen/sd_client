@@ -59,12 +59,12 @@ RUN mkdir $install_path
 
 ADD requirements.txt $install_path/requirements.txt
 RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $install_path/requirements.txt --extra-index-url "https://download.pytorch.org/whl/cu113"
-RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $install_path/imaginAIry/requirements-dev.txt --extra-index-url "https://download.pytorch.org/whl/cu113"
 
+ADD imaginAIry $install_path/imaginAIry
+RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $install_path/imaginAIry/requirements-dev.txt --extra-index-url "https://download.pytorch.org/whl/cu113"
 ADD logs $install_path/logs
 ADD client $install_path/client
 ADD run_client.py $install_path/run_client.py
-ADD imaginAIry $install_path/imaginAIry
 
 WORKDIR $install_path
 
