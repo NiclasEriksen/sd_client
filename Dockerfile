@@ -67,7 +67,7 @@ ADD client $install_path/client
 ADD run_client.py $install_path/run_client.py
 
 WORKDIR $install_path/imaginAIry
-RUN python3 setup.py
+RUN python3 setup.py install
 WORKDIR $install_path
 
 
