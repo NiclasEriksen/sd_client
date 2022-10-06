@@ -34,6 +34,8 @@ class SDTask():
     input_image_file: NamedTemporaryFile =None
     input_image_url: str = ""
     input_image_downloaded: bool = False
+    input_image_strength: float = 0.3
+    mask_prompt: str = ""
     prompt: str = "No prompt"
     prompt_strength: float = 0.8
     steps: int = 40
@@ -144,6 +146,12 @@ class SDTask():
         if "input_image_url" in data:
             self.input_image_url = data["input_image_url"]
 
+        if "input_image_strength" in data:
+            self.input_image_strength = float(data["input_image_strength"])
+
+        if "mask_prompt" in data:
+            self.mask_prompt = data["mask_prompt"]
+
         logger.debug(data)
 
     @property
@@ -175,8 +183,10 @@ class SDTask():
             seed=self.seed,
             fix_faces=self.fix_faces,
             init_image=self.input_image_file.name if self.input_image_downloaded else None,
+            init_image_strength=self.input_image_strength,
             upscale=self.upscale,
-            tile_mode=self.tileable
+            tile_mode=self.tileable,
+            mask_prompt=self.mask_prompt if len(self.mask_prompt) else None
         )
         if test_run:
             await asyncio.sleep(10)
