@@ -36,6 +36,7 @@ class SDTask():
     input_image_downloaded: bool = False
     input_image_strength: float = 0.3
     mask_prompt: str = ""
+    mask_mode_replace: bool = True
     prompt: str = "No prompt"
     prompt_strength: float = 0.8
     steps: int = 40
@@ -152,6 +153,9 @@ class SDTask():
         if "mask_prompt" in data:
             self.mask_prompt = data["mask_prompt"]
 
+        if "mask_mode_replace" in data:
+            self.mask_mode_replace = data["mask_mode_replace"]
+
         logger.debug(data)
 
     @property
@@ -186,7 +190,8 @@ class SDTask():
             init_image_strength=self.input_image_strength,
             upscale=self.upscale,
             tile_mode=self.tileable,
-            mask_prompt=self.mask_prompt if len(self.mask_prompt) else None
+            mask_prompt=self.mask_prompt if len(self.mask_prompt) else None,
+            mask_mode="replace" if self.mask_mode_replace else "keep"
         )
         if test_run:
             await asyncio.sleep(10)
