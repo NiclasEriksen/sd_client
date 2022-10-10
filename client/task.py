@@ -16,6 +16,7 @@ from client.parse_prompt import parse_prompt
 
 imaginairy.api.logger = logger
 imaginairy.schema.logger = logger
+imaginairy.progress.logger = logger
 plms.logger = logger
 
 IDLE = 0
