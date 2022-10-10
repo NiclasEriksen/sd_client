@@ -87,7 +87,6 @@ class ProgressFilter(Filter):
             logger.info("Stage {0} of {1}".format(self.stage, self.stage_max))
 
         else:
-            logger.info(str)
             s = str.split("/")
             if len(s) == 2:
                 try:
