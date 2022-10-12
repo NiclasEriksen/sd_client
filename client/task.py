@@ -218,19 +218,32 @@ def imagine_process(ip: ImaginePrompt, task: SDTask):
     try:
         for result in imagine([ip]):
             if result != None:
+                img = None
+                exif = result._exif()
                 if "upscaled" in result.images:
                     logger.info("Saving upscaled image...")
+                    img = result.images.get("upscaled", None)
                     result.save(task.image_file.name, image_type="upscaled")
                 elif "modified_original" in result.images:
                     logger.info("Saving modified image...")
+                    img = result.images.get("modified_original", None)
                     result.save(task.image_file.name, image_type="modified_original")
                 else:
                     logger.info("Saving generated image...")
+                    img = result.images.get("generated", None)
                     result.save(task.image_file.name)
                 task.nsfw = result.is_nsfw
+                save_image(img, task.image_file.name, exif)
 
 
     except Exception as e:
         logger.error(e)
         logger.error("AI generation failed.")
 
+
+def save_image(img: Image, save_path: str, exif):
+    if img is None:
+        raise ValueError(
+            "No image to save???"
+        )
+    img.convert("RGB").save(save_path, exif=exif, format="webp", quality=100, lossless=True)
