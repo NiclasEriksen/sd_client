@@ -246,4 +246,4 @@ def save_image(img: Image, save_path: str, exif):
         raise ValueError(
             "No image to save???"
         )
-    img.convert("RGB").save(save_path, exif=exif, format="webp", quality=75)
+    img.convert("RGB").save(save_path, exif=exif, format="webp", quality=80)
