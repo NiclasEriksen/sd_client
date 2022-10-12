@@ -5,10 +5,11 @@ import shutil
 from tempfile import NamedTemporaryFile
 from typing import Union
 
-import imaginairy.api
 import requests
+from PIL import Image
 from requests.exceptions import SSLError
 from client.logger import logger
+import imaginairy.api
 from imaginairy import ImaginePrompt, imagine, WeightedPrompt, samplers
 from imaginairy.samplers import plms
 
@@ -196,7 +197,9 @@ class SDTask():
         )
         if test_run:
             await asyncio.sleep(10)
-            shutil.copyfile("client/missing.jpg", self.image_file.name)
+            img = Image.open("client/missing.jpg", "r")
+            img.save(self.image_file.name)
+            # shutil.copyfile("client/missing.jpg", self.image_file.name)
         else:
             loop = asyncio.get_running_loop()
             _result = await loop.run_in_executor(None, imagine_process, ip, self)
@@ -215,18 +218,32 @@ def imagine_process(ip: ImaginePrompt, task: SDTask):
     try:
         for result in imagine([ip]):
             if result != None:
+                img = None
+                exif = result._exif()
                 if "upscaled" in result.images:
                     logger.info("Saving upscaled image...")
-                    result.save(task.image_file.name, image_type="upscaled")
+                    img = result.images.get("upscaled", None)
+                    # result.save(task.image_file.name, image_type="upscaled")
                 elif "modified_original" in result.images:
                     logger.info("Saving modified image...")
-                    result.save(task.image_file.name, image_type="modified_original")
+                    img = result.images.get("modified_original", None)
+                    # result.save(task.image_file.name, image_type="modified_original")
                 else:
                     logger.info("Saving generated image...")
-                    result.save(task.image_file.name)
+                    img = result.images.get("generated", None)
+                    # result.save(task.image_file.name)
                 task.nsfw = result.is_nsfw
+                save_image(img, task.image_file.name, exif)
+
 
     except Exception as e:
         logger.error(e)
         logger.error("AI generation failed.")
 
+
+def save_image(img: Image, save_path: str, exif):
+    if img is None:
+        raise ValueError(
+            "No image to save???"
+        )
+    img.convert("RGB").save(save_path, exif=exif, format="webp", quality=90)

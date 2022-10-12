@@ -242,7 +242,7 @@ async def task_runner():
                         logger.info("New task received, adding to queue.")
                         image_file = tempfile.NamedTemporaryFile(
                             prefix="aigen_",
-                            suffix=".jpg"
+                            suffix=".webp"
                         )
                         input_image_file = tempfile.NamedTemporaryFile(
                             prefix="aigen_input_",
