@@ -33,6 +33,7 @@ class IntegrityError(Exception):
 
 class SDTask():
     image_file: NamedTemporaryFile = None
+    print_file: NamedTemporaryFile = None
     input_image_file: NamedTemporaryFile =None
     input_image_url: str = ""
     input_image_downloaded: bool = False
@@ -50,18 +51,20 @@ class SDTask():
     fix_faces: bool = False
     upscale: bool = False
     tileable: bool = False
+    to_print: bool = False
     nsfw = False
     callback = None
     result = None
     gpu: int = 0
     progress: float = 0.0
 
-    def __init__(self, out_file: NamedTemporaryFile=None, in_file: NamedTemporaryFile=None, json_data=None, callback=None):
+    def __init__(self, out_file: NamedTemporaryFile=None, in_file: NamedTemporaryFile=None, print_file: NamedTemporaryFile=None, json_data=None, callback=None):
         if isinstance(json_data, dict):
             self.from_json(json_data)
         self.callback = callback
         self.image_file = out_file
         self.input_image_file = in_file
+        self.print_file = print_file
 
     async def download_input_image(self):
         if not len(self.input_image_url):
@@ -158,6 +161,9 @@ class SDTask():
         if "mask_mode_replace" in data:
             self.mask_mode_replace = data["mask_mode_replace"]
 
+        if "to_print" in data:
+            self.to_print = data["to_print"]
+
         logger.debug(data)
 
     @property
@@ -234,7 +240,10 @@ def imagine_process(ip: ImaginePrompt, task: SDTask):
                 task.nsfw = result.is_nsfw
 
                 if img:
-                    img.convert("RGB").save(task.image_file.name, exif=result._exif(), quality=90)
+                    if task.to_print:
+                        img.convert("CMYK").save(task.print_file, exif=result._exif(), compression=None, quality=100)
+                    else:
+                        img.convert("RGB").save(task.image_file.name, exif=result._exif(), quality=90)
                 else:
                     raise FileNotFoundError("No image in result?")
 

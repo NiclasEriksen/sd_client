@@ -165,10 +165,17 @@ def run_client() -> bool:
 async def report_done(task: SDTask):
     if task.status == DONE:
         try:
-            result = requests.post(
-                API_URL + "/report_complete/{0}/{1}".format(task.task_id, 1 if task.nsfw else 0),
-                files={"file": open(task.image_file.name, 'rb')}
-            )
+            if task.to_print:
+                result = requests.post(
+                    API_URL + "/report_print_complete/{0}".format(task.task_id),
+                    files={"file": open(task.print_file.name, 'rb')}
+                )
+            else:
+                result = requests.post(
+                    API_URL + "/report_complete/{0}/{1}".format(task.task_id, 1 if task.nsfw else 0),
+                    files={"file": open(task.image_file.name, 'rb')}
+                )
+
             if result.status_code == 200:
                 # logger.debug(result.json())
                 resp = result.json()
@@ -225,6 +232,7 @@ async def task_runner():
                 await report_done(current_task)
                 current_task.image_file.close()
                 current_task.input_image_file.close()
+                current_task.print_file.close()
                 current_task = None
         else:
             current_task_id = -1
@@ -248,9 +256,14 @@ async def task_runner():
                             prefix="aigen_input_",
                             suffix=".jpg"
                         )
+                        print_file = tempfile.NamedTemporaryFile(
+                            prefix="aigen_print_",
+                            suffix=".tiff"
+                        )
                         current_task = SDTask(
                             out_file=image_file,
                             in_file=input_image_file,
+                            print_file=print_file,
                             json_data=result.json(),
                             callback=task_callback
                         )
