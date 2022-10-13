@@ -241,7 +241,7 @@ def imagine_process(ip: ImaginePrompt, task: SDTask):
 
                 if img:
                     if task.to_print:
-                        img.convert("CMYK").save(task.print_file, exif=result._exif(), compression=None, quality=100)
+                        img.convert("RGB").save(task.print_file, exif=result._exif(), compression=None, quality=100)
                     else:
                         img.convert("RGB").save(task.image_file.name, exif=result._exif(), quality=90)
                 else:
