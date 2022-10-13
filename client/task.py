@@ -210,7 +210,11 @@ class SDTask():
             loop = asyncio.get_running_loop()
             _result = await loop.run_in_executor(None, imagine_process, ip, self)
 
-        file_size = os.path.getsize(self.image_file.name)
+        if self.to_print:
+            file_size = os.path.getsize(self.image_file.name)
+        else:
+            file_size = os.path.getsize(self.print_file.name)
+
         if file_size < 100 and not test_run: # Just in case
             self.status = ERROR
         else:
