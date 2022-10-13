@@ -218,16 +218,26 @@ def imagine_process(ip: ImaginePrompt, task: SDTask):
     try:
         for result in imagine([ip]):
             if result != None:
+                img = None
                 if "upscaled" in result.images:
                     logger.info("Saving upscaled image...")
-                    result.save(task.image_file.name, image_type="upscaled")
+                    img = result.images.get("upscaled", None)
+                    # result.save(task.image_file.name, image_type="upscaled")
                 elif "modified_original" in result.images:
                     logger.info("Saving modified image...")
-                    result.save(task.image_file.name, image_type="modified_original")
+                    img = result.images.get("modified_original", None)
+                    # result.save(task.image_file.name, image_type="modified_original")
                 else:
                     logger.info("Saving generated image...")
-                    result.save(task.image_file.name)
+                    img = result.images.get("generated", None)
+                    # result.save(task.image_file.name)
                 task.nsfw = result.is_nsfw
+
+                if img:
+                    img.convert("RGB").save(task.image_file.name, exif=result._exif(), quality=90)
+                else:
+                    raise FileNotFoundError("No image in result?")
+
 
     except Exception as e:
         logger.error(e)
