@@ -40,6 +40,7 @@ class SDTask():
     input_image_strength: float = 0.3
     mask_prompt: str = ""
     mask_mode_replace: bool = True
+    mask_mode_image: bool = False
     prompt: str = "No prompt"
     prompt_strength: float = 0.8
     steps: int = 40
@@ -161,6 +162,9 @@ class SDTask():
         if "mask_mode_replace" in data:
             self.mask_mode_replace = data["mask_mode_replace"]
 
+        if "mask_mode_image" in data:
+            self.mask_mode_image = data["mask_mode_image"]
+
         if "to_print" in data:
             self.to_print = data["to_print"]
 
@@ -194,7 +198,8 @@ class SDTask():
             height=self.height,
             seed=self.seed,
             fix_faces=self.fix_faces,
-            init_image=self.input_image_file.name if self.input_image_downloaded else None,
+            init_image=self.input_image_file.name if (self.input_image_downloaded and not self.mask_mode_image) else None,
+            mask_image=self.input_image_file.name if (self.input_image_downloaded and self.mask_mode_image) else None,
             init_image_strength=self.input_image_strength,
             upscale=self.upscale,
             tile_mode=self.tileable,
