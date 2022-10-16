@@ -82,7 +82,7 @@ class SDTask():
     result = None
     gpu: int = 0
     progress: float = 0.0
-    sampler: SamplerType.PLMS
+    sampler: str = SamplerType.PLMS
 
     def __init__(
             self,
@@ -97,7 +97,7 @@ class SDTask():
         self.callback = callback
         self.image_file = out_file
         self.input_image_file = in_file
-        self.mask_image_file = in_file
+        self.mask_image_file = mask_file
         self.print_file = print_file
 
     async def download_input_image(self):
@@ -298,10 +298,10 @@ def imagine_process(ip: ImaginePrompt, task: SDTask):
                     logger.info("Saving upscaled image...")
                     img = result.images.get("upscaled", None)
                     # result.save(task.image_file.name, image_type="upscaled")
-                # elif "modified_original" in result.images:
-                #     logger.info("Saving modified image...")
-                #     img = result.images.get("modified_original", None)
-                #     # result.save(task.image_file.name, image_type="modified_original")
+                elif "modified_original" in result.images:
+                    logger.info("Saving modified image...")
+                    img = result.images.get("modified_original", None)
+                    # result.save(task.image_file.name, image_type="modified_original")
                 else:
                     logger.info("Saving generated image...")
                     img = result.images.get("generated", None)
