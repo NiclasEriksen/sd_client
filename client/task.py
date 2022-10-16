@@ -36,7 +36,10 @@ class SDTask():
     print_file: NamedTemporaryFile = None
     input_image_file: NamedTemporaryFile =None
     input_image_url: str = ""
+    mask_image_file: NamedTemporaryFile =None
+    mask_image_url: str = ""
     input_image_downloaded: bool = False
+    mask_image_downloaded: bool = False
     input_image_strength: float = 0.3
     mask_prompt: str = ""
     mask_mode_replace: bool = True
@@ -59,35 +62,62 @@ class SDTask():
     gpu: int = 0
     progress: float = 0.0
 
-    def __init__(self, out_file: NamedTemporaryFile=None, in_file: NamedTemporaryFile=None, print_file: NamedTemporaryFile=None, json_data=None, callback=None):
+    def __init__(
+            self,
+            out_file: NamedTemporaryFile=None,
+            in_file: NamedTemporaryFile=None,
+            mask_file: NamedTemporaryFile=None,
+            print_file: NamedTemporaryFile=None,
+            json_data=None, callback=None
+    ):
         if isinstance(json_data, dict):
             self.from_json(json_data)
         self.callback = callback
         self.image_file = out_file
         self.input_image_file = in_file
+        self.mask_image_file = in_file
         self.print_file = print_file
 
     async def download_input_image(self):
-        if not len(self.input_image_url):
-            return
-        try:
+        if len(self.input_image_url):
             try:
-                result = requests.get(self.input_image_url)
-            except SSLError:
-                logger.debug("HTTPS error, trying HTTP")
-                result = requests.get(self.input_image_url.replace("https", "http"))
-        except Exception as e:
-            logger.debug(e)
-            logger.error("Unable to download input image.")
-            return
-        else:
-            if result.status_code == 200:
-                self.input_image_file.write(result.content)
-                logger.info("Saved input image as a temporary file.")
-                self.input_image_downloaded = True
+                try:
+                    result = requests.get(self.input_image_url)
+                except SSLError:
+                    logger.debug("HTTPS error, trying HTTP")
+                    result = requests.get(self.input_image_url.replace("https", "http"))
+            except Exception as e:
+                logger.debug(e)
+                logger.error("Unable to download input image.")
+                return
             else:
-                logger.debug(result)
-                logger.error("Failure to get input image.")
+                if result.status_code == 200:
+                    self.input_image_file.write(result.content)
+                    logger.info("Saved input image as a temporary file.")
+                    self.input_image_downloaded = True
+                else:
+                    logger.debug(result)
+                    logger.error("Failure to get input image.")
+
+        if len(self.mask_image_url):
+            try:
+                try:
+                    result = requests.get(self.mask_image_url)
+                except SSLError:
+                    logger.debug("HTTPS error, trying HTTP")
+                    result = requests.get(self.mask_image_url.replace("https", "http"))
+            except Exception as e:
+                logger.debug(e)
+                logger.error("Unable to download mask image.")
+                return
+            else:
+                if result.status_code == 200:
+                    self.mask_image_file.write(result.content)
+                    logger.info("Saved mask image as a temporary file.")
+                    self.mask_image_downloaded = True
+                else:
+                    logger.debug(result)
+                    logger.error("Failure to get mask image.")
 
     def from_json(self, data: dict):
         self.status = IDLE
@@ -161,6 +191,9 @@ class SDTask():
 
         if "mask_mode_replace" in data:
             self.mask_mode_replace = data["mask_mode_replace"]
+
+        if "mask_image_url" in data:
+            self.mask_image_url = data["mask_image_url"]
 
         if "mask_mode_image" in data:
             self.mask_mode_image = data["mask_mode_image"]

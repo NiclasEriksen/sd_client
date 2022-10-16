@@ -232,6 +232,7 @@ async def task_runner():
                 await report_done(current_task)
                 current_task.image_file.close()
                 current_task.input_image_file.close()
+                current_task.mask_image_file.close()
                 current_task.print_file.close()
                 current_task = None
         else:
@@ -256,12 +257,17 @@ async def task_runner():
                             prefix="aigen_input_",
                             suffix=".png"
                         )
+                        mask_image_file = tempfile.NamedTemporaryFile(
+                            prefix="aigen_input_",
+                            suffix=".png"
+                        )
                         print_file = tempfile.NamedTemporaryFile(
                             prefix="aigen_print_",
                             suffix=".tiff"
                         )
                         current_task = SDTask(
                             out_file=image_file,
+                            mask_file=mask_image_file,
                             in_file=input_image_file,
                             print_file=print_file,
                             json_data=result.json(),
