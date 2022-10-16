@@ -254,7 +254,7 @@ async def task_runner():
                         )
                         input_image_file = tempfile.NamedTemporaryFile(
                             prefix="aigen_input_",
-                            suffix=".jpg"
+                            suffix=".png"
                         )
                         print_file = tempfile.NamedTemporaryFile(
                             prefix="aigen_print_",
