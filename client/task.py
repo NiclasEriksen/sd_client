@@ -231,7 +231,7 @@ class SDTask():
             height=self.height,
             seed=self.seed,
             fix_faces=self.fix_faces,
-            init_image=self.input_image_file.name if (self.input_image_downloaded and not self.mask_mode_image) else None,
+            init_image=self.input_image_file.name if self.input_image_downloaded else None,
             mask_image=self.mask_image_file.name if (self.mask_image_downloaded and self.mask_mode_image) else None,
             init_image_strength=self.input_image_strength,
             upscale=self.upscale,
