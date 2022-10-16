@@ -271,10 +271,10 @@ def imagine_process(ip: ImaginePrompt, task: SDTask):
                     logger.info("Saving upscaled image...")
                     img = result.images.get("upscaled", None)
                     # result.save(task.image_file.name, image_type="upscaled")
-                elif "modified_original" in result.images:
-                    logger.info("Saving modified image...")
-                    img = result.images.get("modified_original", None)
-                    # result.save(task.image_file.name, image_type="modified_original")
+                # elif "modified_original" in result.images:
+                #     logger.info("Saving modified image...")
+                #     img = result.images.get("modified_original", None)
+                #     # result.save(task.image_file.name, image_type="modified_original")
                 else:
                     logger.info("Saving generated image...")
                     img = result.images.get("generated", None)
