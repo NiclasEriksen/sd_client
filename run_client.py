@@ -258,7 +258,7 @@ async def task_runner():
                             suffix=".png"
                         )
                         mask_image_file = tempfile.NamedTemporaryFile(
-                            prefix="aigen_input_",
+                            prefix="aigen_mask_",
                             suffix=".png"
                         )
                         print_file = tempfile.NamedTemporaryFile(
