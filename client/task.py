@@ -26,6 +26,27 @@ DONE = 2
 ERROR = 3
 
 
+class SamplerType:
+    PLMS = "plms"
+    DDIM = "ddim"
+    KLMS = "k_lms"
+    KDPM2 = "k_dpm_2"
+    KDPM2A = "k_dpm_2_a"
+    K_EULER = "k_euler"
+    K_EULER_A = "k_euler_a"
+    K_HEUN = "k_heun"
+
+SAMPLER_TYPES = [
+    SamplerType.PLMS,
+    SamplerType.DDIM,
+    SamplerType.KLMS,
+    SamplerType.KDPM2,
+    SamplerType.KDPM2A,
+    SamplerType.K_EULER,
+    SamplerType.K_EULER_A,
+    SamplerType.K_HEUN
+]
+
 
 class IntegrityError(Exception):
     pass
@@ -61,6 +82,7 @@ class SDTask():
     result = None
     gpu: int = 0
     progress: float = 0.0
+    sampler: SamplerType.PLMS
 
     def __init__(
             self,
@@ -201,6 +223,10 @@ class SDTask():
         if "to_print" in data:
             self.to_print = data["to_print"]
 
+        if "sampler" in data:
+            if data["sampler"] in SAMPLER_TYPES:
+                self.sampler = data["sampler"]
+
         logger.debug(data)
 
     @property
@@ -237,7 +263,8 @@ class SDTask():
             upscale=self.upscale,
             tile_mode=self.tileable,
             mask_prompt=self.mask_prompt if len(self.mask_prompt) else None,
-            mask_mode="replace" if self.mask_mode_replace else "keep"
+            mask_mode="replace" if self.mask_mode_replace else "keep",
+            sampler_type=self.sampler
         )
         if test_run:
             await asyncio.sleep(10)
