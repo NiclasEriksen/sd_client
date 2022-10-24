@@ -26,15 +26,21 @@ DONE = 2
 ERROR = 3
 
 
+class ModelType:
+    ORIGINAL = "SD-1.4"
+    NEW      = "SD-1.5"
+
+
 class SamplerType:
-    PLMS = "plms"
-    DDIM = "ddim"
-    KLMS = "k_lms"
-    KDPM2 = "k_dpm_2"
-    KDPM2A = "k_dpm_2_a"
-    K_EULER = "k_euler"
-    K_EULER_A = "k_euler_a"
-    K_HEUN = "k_heun"
+    PLMS        = "plms"
+    DDIM        = "ddim"
+    KLMS        = "k_lms"
+    KDPM2       = "k_dpm_2"
+    KDPM2A      = "k_dpm_2_a"
+    K_EULER     = "k_euler"
+    K_EULER_A   = "k_euler_a"
+    K_HEUN      = "k_heun"
+
 
 SAMPLER_TYPES = [
     SamplerType.PLMS,
@@ -264,7 +270,8 @@ class SDTask():
             tile_mode=self.tileable,
             mask_prompt=self.mask_prompt if len(self.mask_prompt) else None,
             mask_mode="replace" if self.mask_mode_replace else "keep",
-            sampler_type=self.sampler
+            sampler_type=self.sampler,
+            model=ModelType.ORIGINAL
         )
         if test_run:
             await asyncio.sleep(10)
