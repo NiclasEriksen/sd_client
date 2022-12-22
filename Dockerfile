@@ -1,4 +1,4 @@
-FROM python:3.10.7-slim-bullseye as base
+FROM python:3.10.6-slim-bullseye as base
 
 ENV NVARCH x86_64
 
@@ -51,26 +51,27 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     TZ=Europe/Oslo
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-RUN apt-get update && apt-get install -y libgl1 libglib2.0-0
+RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 gcc
 
 
 ARG install_path=/usr/local/share/sd_client
 RUN mkdir $install_path
-RUN mkdir $install_path/imaginAIry
+# RUN mkdir $install_path/imaginAIry
 
 ADD requirements.txt $install_path/requirements.txt
-ADD imaginAIry/requirements-dev.txt $install_path/imaginAIry/requirements-dev.txt
-RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $install_path/imaginAIry/requirements-dev.txt -r $install_path/requirements.txt --extra-index-url "https://download.pytorch.org/whl/cu113"
+#ADD imaginAIry/requirements-dev.txt $install_path/imaginAIry/requirements-dev.txt
+#RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $install_path/requirements.txt --extra-index-url "https://download.pytorch.org/whl/cu113"
+RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install -r $install_path/requirements.txt
 
-ADD "https://api.github.com/repos/NiclasEriksen/imaginAIry/commits?per_page=1" latest_commit
-ADD imaginAIry $install_path/imaginAIry
+#ADD "https://api.github.com/repos/NiclasEriksen/imaginAIry/commits?per_page=1" latest_commit
+#ADD imaginAIry $install_path/imaginAIry
 ADD logs $install_path/logs
 ADD "https://api.github.com/repos/NiclasEriksen/sd_client/commits?per_page=1" latest_commit
 ADD client $install_path/client
 ADD run_client.py $install_path/run_client.py
 
-WORKDIR $install_path/imaginAIry
-RUN python3 setup.py install
+#WORKDIR $install_path/imaginAIry
+#RUN python3 setup.py install
 WORKDIR $install_path
 
 

@@ -28,7 +28,7 @@ ERROR = 3
 
 class ModelType:
     ORIGINAL = "SD-1.4"
-    NEW      = "SD-1.5"
+    NEW      = "SD-2.1"
 
 
 class SamplerType:
@@ -37,6 +37,7 @@ class SamplerType:
     KLMS        = "k_lms"
     KDPM2       = "k_dpm_2"
     KDPM2A      = "k_dpm_2_a"
+    KDPMPP2M    = "k_dpmpp_2m"
     K_EULER     = "k_euler"
     K_EULER_A   = "k_euler_a"
     K_HEUN      = "k_heun"
@@ -48,6 +49,7 @@ SAMPLER_TYPES = [
     SamplerType.KLMS,
     SamplerType.KDPM2,
     SamplerType.KDPM2A,
+    SamplerType.KDPMPP2M,
     SamplerType.K_EULER,
     SamplerType.K_EULER_A,
     SamplerType.K_HEUN
@@ -88,7 +90,7 @@ class SDTask():
     result = None
     gpu: int = 0
     progress: float = 0.0
-    sampler: str = SamplerType.PLMS
+    sampler: str = SamplerType.KDPMPP2M
 
     def __init__(
             self,
@@ -256,7 +258,7 @@ class SDTask():
             prompt = parsed_prompt
 
         ip = ImaginePrompt(
-            prompt,
+            prompt=prompt,
             prompt_strength=self.prompt_strength,
             steps=self.steps,
             width=self.width,
@@ -271,7 +273,7 @@ class SDTask():
             mask_prompt=self.mask_prompt if len(self.mask_prompt) else None,
             mask_mode="replace" if self.mask_mode_replace else "keep",
             sampler_type=self.sampler,
-            model=ModelType.ORIGINAL
+            model=ModelType.NEW
         )
         if test_run:
             await asyncio.sleep(10)

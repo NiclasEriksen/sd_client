@@ -1,5 +1,6 @@
-torch==1.12.1+cu113
-# imaginAIry>=2.1.0
+# torch==1.12.1
+imaginAIry>=7.1.0
 Pillow>=9.2.0
 requests>=2.28.1
 gputil>=1.4.0
+#click>=8.1.3
