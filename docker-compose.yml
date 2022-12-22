@@ -26,10 +26,10 @@ services:
     restart: always
     deploy:
       resources:
-        limits:
-          memory: 8G
+        #limits:
+        #  memory: 8G
         reservations:
-          memory: 6G
+        #  memory: 6G
           devices:
           - driver: nvidia
             capabilities: [gpu]
