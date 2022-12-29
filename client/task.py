@@ -38,6 +38,7 @@ class SamplerType:
     KDPM2       = "k_dpm_2"
     KDPM2A      = "k_dpm_2_a"
     KDPMPP2M    = "k_dpmpp_2m"
+    KDPMPP2SA    = "k_dpmpp_2s_a"
     K_EULER     = "k_euler"
     K_EULER_A   = "k_euler_a"
     K_HEUN      = "k_heun"
@@ -50,6 +51,7 @@ SAMPLER_TYPES = [
     SamplerType.KDPM2,
     SamplerType.KDPM2A,
     SamplerType.KDPMPP2M,
+    SamplerType.KDPMPP2SA,
     SamplerType.K_EULER,
     SamplerType.K_EULER_A,
     SamplerType.K_HEUN
